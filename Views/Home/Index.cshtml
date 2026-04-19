@@ -1,8 +1,316 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack — Dashboard</title>
+  <link rel="stylesheet" href="~/css/site.css" />
+  <script src="~/js/site.js"></script>
+  <style>
+    .mid-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    /* Donut */
+    .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .donut-svg-wrap { position: relative; width: 140px; height: 140px; }
+    .donut-center {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .donut-center-val { font-family: var(--font-mono); font-size: 16px; font-weight: 500; }
+    .donut-center-lbl { font-size: 9px; color: var(--text-secondary); margin-top: 2px; }
+    .donut-legend { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    .legend-row { display: flex; align-items: center; gap: 8px; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .legend-name { font-size: 11px; color: var(--text-secondary); flex: 1; }
+    .legend-pct  { font-family: var(--font-mono); font-size: 11px; }
+    /* Line chart */
+    .chart-wrap { position: relative; height: 160px; }
+    canvas { width: 100%; height: 100%; display: block; }
+  
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div id="sidebar-mount"></div>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="month-badge" id="monthBadge"></div>
+      </div>
+      <button class="add-btn" onclick="openModal()">+ Add Expense</button>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Spent</div>
+        <div class="stat-value purple" id="statSpent">₹0</div>
+        <div class="stat-change" id="statSpentChg"></div>
+      </div>
+      <div class="stat-card c-teal">
+        <div class="stat-label">Total Income</div>
+        <div class="stat-value teal" id="statIncome">₹0</div>
+        <div class="stat-change" id="statIncomeChg"></div>
+      </div>
+      <div class="stat-card c-coral">
+        <div class="stat-label">Net Savings</div>
+        <div class="stat-value coral" id="statSavings">₹0</div>
+        <div class="stat-change" id="statSavingsChg"></div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="mid-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Spending Trend</div>
+          <div class="panel-sub">Last 7 days</div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">By Category</div>
+        </div>
+        <div class="donut-wrap">
+          <div class="donut-svg-wrap">
+            <svg id="donutSvg" width="140" height="140" viewBox="0 0 140 140"></svg>
+            <div class="donut-center">
+              <div class="donut-center-val" id="donutCenterVal">₹0</div>
+              <div class="donut-center-lbl">spent</div>
+            </div>
+          </div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent transactions -->
+    <div class="panel">
+      <div class="tx-header-row">
+        <div class="panel-title">Recent Transactions</div>
+        <div class="filter-tabs">
+          <button class="ftab active" onclick="filterTx('all',this)">All</button>
+          <button class="ftab" onclick="filterTx('expense',this)">Expenses</button>
+          <button class="ftab" onclick="filterTx('income',this)">Income</button>
+        </div>
+      </div>
+      <div class="tx-list tx-scroll" id="txList" style="max-height:360px;"></div>
+    </div>
+  </main>
+
+  <div id="modal-mount"></div>
 </div>
+
+<script src="shared.js"></script>
+<script>
+  /* ── Boot ── */
+  document.getElementById('sidebar-mount').innerHTML = renderSidebar('dashboard');
+  document.getElementById('modal-mount').innerHTML   = renderModal();
+
+  const now = new Date();
+  document.getElementById('monthBadge').textContent =
+    now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }).toUpperCase();
+
+  let entries = loadEntries();
+  let txFilter = 'all';
+
+  function getExpenses() { return entries.filter(e => e.type === 'expense'); }
+  function getIncome()   { return entries.filter(e => e.type === 'income'); }
+  function totalAmt(arr) { return arr.reduce((s, e) => s + e.amt, 0); }
+
+  /* ── Stats ── */
+  function updateStats() {
+    const spent   = totalAmt(getExpenses());
+    const income  = totalAmt(getIncome());
+    const savings = income - spent;
+    document.getElementById('statSpent').textContent  = fmt_inr(spent);
+    document.getElementById('statIncome').textContent = fmt_inr(income);
+    document.getElementById('statSavings').textContent= fmt_inr(Math.abs(savings));
+    document.getElementById('statSpentChg').innerHTML =
+      `<span class="down">${getExpenses().length} transactions</span>`;
+    document.getElementById('statIncomeChg').innerHTML =
+      `<span class="up">${getIncome().length} credits</span>`;
+    document.getElementById('statSavingsChg').innerHTML = savings >= 0
+      ? `<span class="up">▲ net positive</span>`
+      : `<span class="down">▼ net negative</span>`;
+  }
+
+  /* ── TX list ── */
+  function filterTx(f, btn) {
+    txFilter = f;
+    btn.closest('.filter-tabs').querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTxList();
+  }
+
+  function renderTxList() {
+    const el = document.getElementById('txList');
+    let data = [...entries].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 20);
+    if (txFilter === 'expense') data = data.filter(e => e.type === 'expense');
+    if (txFilter === 'income')  data = data.filter(e => e.type === 'income');
+    if (!data.length) { el.innerHTML = '<div class="empty-state">no entries yet</div>'; return; }
+    el.innerHTML = data.map(e => {
+      const m    = CAT_META[e.cat] || CAT_META.Other;
+      const sign = e.type === 'income' ? '+' : '-';
+      const cls  = e.type === 'income' ? 'pos' : 'neg';
+      const d    = new Date(e.date + 'T00:00:00');
+      const dStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      return `<div class="tx-item">
+        <div class="tx-icon" style="background:${m.color}22;">${m.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="tx-name">${e.desc}</div>
+          <div class="tx-cat">${e.cat}</div>
+        </div>
+        <div class="tx-date">${dStr}</div>
+        <div class="tx-amount ${cls}">${sign}${fmt_inr(e.amt)}</div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ── Line Chart ── */
+  function drawLineChart() {
+    const canvas = document.getElementById('lineChart');
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.offsetWidth, H = canvas.offsetHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const key = fmt(d);
+      const sum = getExpenses().filter(e => e.date === key).reduce((s, e) => s + e.amt, 0);
+      days.push({ label: d.toLocaleDateString('en-IN', { weekday: 'short' }), val: sum });
+    }
+
+    const maxV = Math.max(...days.map(d => d.val), 1000);
+    const pad  = { t: 10, r: 10, b: 28, l: 50 };
+    const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // grid lines
+    ctx.strokeStyle = '#2a2a27'; ctx.lineWidth = 0.5;
+    [0, 0.25, 0.5, 0.75, 1].forEach(f => {
+      const y = pad.t + cH * (1 - f);
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+      ctx.fillStyle = '#444440'; ctx.font = '9px JetBrains Mono,monospace'; ctx.textAlign = 'right';
+      ctx.fillText('₹' + (maxV * f / 1000).toFixed(0) + 'k', pad.l - 6, y + 4);
+    });
+
+    // x labels
+    ctx.fillStyle = '#444440'; ctx.font = '9px JetBrains Mono,monospace'; ctx.textAlign = 'center';
+    days.forEach((d, i) => {
+      ctx.fillText(d.label, pad.l + i / (days.length - 1) * cW, H - 4);
+    });
+
+    const pts = days.map((d, i) => ({
+      x: pad.l + i / (days.length - 1) * cW,
+      y: pad.t + cH * (1 - d.val / maxV),
+    }));
+
+    // area
+    const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + cH);
+    grad.addColorStop(0, 'rgba(139,124,248,0.3)');
+    grad.addColorStop(1, 'rgba(139,124,248,0)');
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.lineTo(pts[pts.length - 1].x, pad.t + cH);
+    ctx.lineTo(pts[0].x, pad.t + cH);
+    ctx.closePath();
+    ctx.fillStyle = grad; ctx.fill();
+
+    // line
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.strokeStyle = '#8b7cf8'; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+
+    // dots
+    pts.forEach(p => {
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#8b7cf8'; ctx.fill();
+      ctx.strokeStyle = '#0d0d0b'; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+  }
+
+  /* ── Donut ── */
+  function drawDonut() {
+    const svg    = document.getElementById('donutSvg');
+    const legend = document.getElementById('donutLegend');
+    const cats = {};
+    getExpenses().forEach(e => { cats[e.cat] = (cats[e.cat] || 0) + e.amt; });
+    const total = Object.values(cats).reduce((s, v) => s + v, 0);
+    document.getElementById('donutCenterVal').textContent = total > 0 ? fmt_inr(total) : '₹0';
+    if (!total) { svg.innerHTML = ''; legend.innerHTML = ''; return; }
+
+    const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+    const cx = 70, cy = 70, R = 54, r = 36, tau = Math.PI * 2;
+    let angle = -Math.PI / 2;
+    let paths = '';
+    sorted.forEach(([cat, val]) => {
+      const frac  = val / total;
+      const sweep = frac * tau;
+      const x1 = cx + R * Math.cos(angle),   y1 = cy + R * Math.sin(angle);
+      const x2 = cx + R * Math.cos(angle + sweep), y2 = cy + R * Math.sin(angle + sweep);
+      const xi1 = cx + r * Math.cos(angle + sweep), yi1 = cy + r * Math.sin(angle + sweep);
+      const xi2 = cx + r * Math.cos(angle),   yi2 = cy + r * Math.sin(angle);
+      const lg  = sweep > Math.PI ? 1 : 0;
+      const color = (CAT_META[cat] || CAT_META.Other).color;
+      paths += `<path d="M${x1} ${y1} A${R} ${R} 0 ${lg} 1 ${x2} ${y2} L${xi1} ${yi1} A${r} ${r} 0 ${lg} 0 ${xi2} ${yi2} Z" fill="${color}" opacity="0.9"/>`;
+      angle += sweep;
+    });
+    svg.innerHTML = paths;
+
+    legend.innerHTML = sorted.slice(0, 5).map(([cat, val]) => {
+      const pct   = Math.round(val / total * 100);
+      const color = (CAT_META[cat] || CAT_META.Other).color;
+      return `<div class="legend-row">
+        <div class="legend-dot" style="background:${color}"></div>
+        <div class="legend-name">${cat}</div>
+        <div class="legend-pct" style="color:${color}">${pct}%</div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ── Modal save ── */
+  function saveEntry() {
+    const desc = document.getElementById('fDesc').value.trim();
+    const amt  = parseFloat(document.getElementById('fAmt').value);
+    const cat  = document.getElementById('fCat').value;
+    const date = document.getElementById('fDate').value;
+    if (!desc || !amt || amt <= 0 || !date) { alert('Please fill all fields.'); return; }
+    entries.push({ id: getNextId(entries), type: _entryType, desc, cat, amt, date });
+    saveEntries(entries);
+    document.getElementById('fDesc').value = '';
+    document.getElementById('fAmt').value  = '';
+    closeModal();
+    renderAll();
+  }
+
+  function renderAll() {
+    updateStats();
+    renderTxList();
+    drawLineChart();
+    drawDonut();
+  }
+
+  window.addEventListener('load', renderAll);
+  window.addEventListener('resize', () => drawLineChart());
+</script>
+</body>
+</html>
