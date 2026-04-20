@@ -67,8 +67,8 @@ function renderSidebar(activePage) {
     const pages = [
         { id: 'dashboard', label: 'Dashboard', href: '/Home/Index', icon: `<rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/>` },
         { id: 'transactions', label: 'Transactions', href: '/Home/Transactions', icon: `<path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>` },
-        { id: 'budget', label: 'Budget', href: 'budget.html', icon: `<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>` },
-        { id: 'reports', label: 'Reports', href: 'reports.html', icon: `<path d="M2 14V9l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>` },
+        { id: 'budget', label: 'Budget', href: '/Home/Budget', icon: `<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>` },
+        { id: 'reports', label: 'Reports', href: '/Home/Reports', icon: `<path d="M2 14V9l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>` },
     ];
 
     return `
