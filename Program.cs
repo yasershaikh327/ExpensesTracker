@@ -30,6 +30,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-var dbHost = Environment.GetEnvironmentVariable("DatabaseConnection");
+//Environment variables
+Environment.GetEnvironmentVariable("DatabaseConnection");
 
 app.Run();

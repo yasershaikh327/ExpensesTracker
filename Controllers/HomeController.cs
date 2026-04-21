@@ -15,7 +15,6 @@ namespace ExpensesTracker.Controllers
 
         public IActionResult Index()
         {
-            ViewBag.Text327 = _configuration["DatabaseConnection"];
             return View();
         }
 
