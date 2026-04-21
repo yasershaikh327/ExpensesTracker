@@ -4,73 +4,38 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTrack — Reports</title>
-  <link rel="stylesheet" href="shared.css" />
   <link rel="stylesheet" href="~/css/site.css" />
   <script src="~/js/site.js"></script>
   <style>
-    .report-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-    .chart-wrap { position: relative; }
-    canvas { width: 100%; height: 100%; display: block; }
-
-    /* Month selector */
-    .month-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
-    .mtab {
-      font-size: 11px; font-family: var(--font-mono);
-      padding: 4px 10px; border-radius: 20px; cursor: pointer;
-      border: 1px solid transparent;
-      background: transparent; color: var(--text-secondary);
-      transition: all 0.15s;
-    }
-    .mtab:hover { color: var(--text-primary); border-color: var(--border); }
-    .mtab.active { background: var(--purple-glow); color: var(--purple); border-color: var(--purple-dim); }
-
-    /* Top spenders table */
-    .top-table { width: 100%; border-collapse: collapse; }
-    .top-table th {
-      font-size: 9px; font-weight: 600; letter-spacing: 0.1em;
-      text-transform: uppercase; color: var(--text-muted);
-      padding: 8px 12px; text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-    .top-table td { padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
-    .top-table tr:last-child td { border-bottom: none; }
-    .top-table tr:hover td { background: var(--bg-raised); }
-    .rank-badge {
-      width: 22px; height: 22px; border-radius: 50%;
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: 700; font-family: var(--font-mono);
-    }
-
-    /* Monthly trend */
-    .month-trend { display: flex; align-items: flex-end; gap: 8px; padding: 10px 0; height: 120px; }
-    .trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .trend-bar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
-    .trend-bar { width: 70%; border-radius: 4px 4px 0 0; transition: height 0.5s ease; min-height: 2px; }
-    .trend-label { font-size: 9px; font-family: var(--font-mono); color: var(--text-muted); }
-    .trend-val   { font-size: 9px; font-family: var(--font-mono); color: var(--text-secondary); }
-
-    /*media (max-width: 800px) { .report-grid { grid-template-columns: 1fr; } }*/
+    .report-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px; }
+    .chart-wrap  { position:relative; }
+    canvas       { width:100%;height:100%;display:block; }
+    .top-table   { width:100%;border-collapse:collapse; }
+    .top-table th { font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border); }
+    .top-table td { padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border); }
+    .top-table tr:last-child td { border-bottom:none; }
+    .top-table tr:hover td { background:var(--bg-raised); }
+    .rank-badge { width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--font-mono); }
+  
   </style>
 </head>
 <body>
 <div class="shell">
   <div id="sidebar-mount"></div>
-
   <main class="main">
     <div class="topbar">
-      <div>
-        <div class="page-title">Reports</div>
-        <div class="month-badge" id="monthBadge"></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="openDrawer()" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div>
+          <div class="page-title">Reports</div>
+          <div class="month-badge" id="monthBadge"></div>
+        </div>
       </div>
-      <button class="add-btn" onclick="openModal()">+ Add Expense</button>
+      <button class="add-btn" onclick="openModal()">+ Add</button>
     </div>
 
-    <!-- Summary stat row -->
     <div class="stats-grid" style="margin-bottom:24px;">
       <div class="stat-card">
         <div class="stat-label">Avg Daily Spend</div>
@@ -89,19 +54,13 @@
       </div>
     </div>
 
-    <!-- Charts row -->
     <div class="report-grid">
-      <!-- Bar chart by category -->
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">Spending by category</div>
         </div>
-        <div class="chart-wrap" style="height:220px;">
-          <canvas id="barChart"></canvas>
-        </div>
+        <div class="chart-wrap" style="height:220px;"><canvas id="barChart"></canvas></div>
       </div>
-
-      <!-- Top spenders -->
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">Top transactions</div>
@@ -111,210 +70,153 @@
       </div>
     </div>
 
-    <!-- Monthly trend -->
     <div class="panel" style="margin-bottom:14px;">
       <div class="panel-header">
         <div class="panel-title">Daily spending — last 14 days</div>
       </div>
-      <div class="chart-wrap" style="height:200px;">
-        <canvas id="areaChart"></canvas>
-      </div>
+      <div class="chart-wrap" style="height:200px;"><canvas id="areaChart"></canvas></div>
     </div>
 
-    <!-- Category breakdown -->
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">Category breakdown</div>
-        <div class="panel-sub">percentage of total spend</div>
+        <div class="panel-sub">% of total spend</div>
       </div>
       <div id="catBreakdown" style="display:flex;flex-direction:column;gap:12px;margin-top:4px;"></div>
     </div>
   </main>
-
+  <div id="mobile-nav-mount"></div>
   <div id="modal-mount"></div>
 </div>
 
 <script src="shared.js"></script>
 <script>
-  document.getElementById('sidebar-mount').innerHTML = renderSidebar('reports');
-  document.getElementById('modal-mount').innerHTML   = renderModal();
+  document.getElementById('sidebar-mount').innerHTML    = renderSidebar('reports');
+  document.getElementById('mobile-nav-mount').innerHTML = renderMobileNav('reports');
+  document.getElementById('modal-mount').innerHTML      = renderModal();
 
   const now = new Date();
   document.getElementById('monthBadge').textContent =
-    now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }).toUpperCase();
+    now.toLocaleDateString('en-IN',{month:'long',year:'numeric'}).toUpperCase();
 
   let entries = loadEntries();
+  const getExpenses=()=>entries.filter(e=>e.type==='expense');
 
-  function getExpenses() { return entries.filter(e => e.type === 'expense'); }
-
-  /* ── Summary stats ── */
-  function updateStats() {
-    const exp  = getExpenses();
-    const days = now.getDate();
-    const totalSpent = exp.reduce((s, e) => s + e.amt, 0);
-    document.getElementById('avgDaily').textContent = fmt_inr(Math.round(totalSpent / days));
-    document.getElementById('txCount').textContent  = exp.length;
-
-    if (exp.length) {
-      const top = exp.reduce((m, e) => e.amt > m.amt ? e : m, exp[0]);
-      document.getElementById('biggestExp').textContent = fmt_inr(top.amt);
-      document.getElementById('biggestExpDesc').textContent = top.desc;
+  function updateStats(){
+    const exp=getExpenses(), days=now.getDate();
+    const totalSpent=exp.reduce((s,e)=>s+e.amt,0);
+    document.getElementById('avgDaily').textContent=fmt_inr(Math.round(totalSpent/days));
+    document.getElementById('txCount').textContent=exp.length;
+    if (exp.length){
+      const top=exp.reduce((m,e)=>e.amt>m.amt?e:m,exp[0]);
+      document.getElementById('biggestExp').textContent=fmt_inr(top.amt);
+      document.getElementById('biggestExpDesc').textContent=top.desc;
     }
   }
 
-  /* ── Bar chart ── */
-  function drawBarChart() {
-    const canvas = document.getElementById('barChart');
+  function drawBarChart(){
+    const canvas=document.getElementById('barChart');
     if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.offsetWidth, H = canvas.offsetHeight;
-    canvas.width = W * dpr; canvas.height = H * dpr;
-    const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
-
-    const cats = {};
-    getExpenses().forEach(e => { cats[e.cat] = (cats[e.cat] || 0) + e.amt; });
-    const data = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+    const dpr=window.devicePixelRatio||1, W=canvas.offsetWidth, H=canvas.offsetHeight;
+    canvas.width=W*dpr; canvas.height=H*dpr;
+    const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
+    const cats={};
+    getExpenses().forEach(e=>{cats[e.cat]=(cats[e.cat]||0)+e.amt;});
+    const data=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
     if (!data.length) return;
-
-    const maxV = Math.max(...data.map(d => d[1]), 1);
-    const pad  = { t: 20, r: 10, b: 44, l: 55 };
-    const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
-    const gap = cW / data.length;
-    const bW  = gap * 0.55;
-    ctx.clearRect(0, 0, W, H);
-
-    // grid
-    ctx.strokeStyle = '#2a2a27'; ctx.lineWidth = 0.5;
-    [0, 0.25, 0.5, 0.75, 1].forEach(f => {
-      const y = pad.t + cH * (1 - f);
-      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
-      ctx.fillStyle = '#444440'; ctx.font = '9px JetBrains Mono,monospace'; ctx.textAlign = 'right';
-      ctx.fillText('₹' + (maxV * f / 1000).toFixed(0) + 'k', pad.l - 6, y + 4);
+    const maxV=Math.max(...data.map(d=>d[1]),1);
+    const pad={t:20,r:10,b:44,l:55};
+    const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+    const gap=cW/data.length, bW=gap*0.55;
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='#2a2a27'; ctx.lineWidth=0.5;
+    [0,.25,.5,.75,1].forEach(f=>{
+      const y=pad.t+cH*(1-f);
+      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+      ctx.fillStyle='#444440'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='right';
+      ctx.fillText('₹'+(maxV*f/1000).toFixed(0)+'k',pad.l-6,y+4);
     });
-
-    data.forEach(([cat, val], i) => {
-      const x     = pad.l + i * gap + (gap - bW) / 2;
-      const bH    = (val / maxV) * cH;
-      const y     = pad.t + cH - bH;
-      const color = (CAT_META[cat] || CAT_META.Other).color;
-
-      ctx.fillStyle = color + 'bb';
-      ctx.beginPath(); ctx.roundRect(x, y, bW, bH, 4); ctx.fill();
-
-      ctx.fillStyle = '#888880'; ctx.font = '9px JetBrains Mono,monospace'; ctx.textAlign = 'center';
-      ctx.fillText(cat, x + bW / 2, H - 6);
-      ctx.fillText((CAT_META[cat] || CAT_META.Other).icon, x + bW / 2, H - 18);
-
-      ctx.fillStyle = color; ctx.font = 'bold 9px JetBrains Mono,monospace';
-      ctx.fillText('₹' + (val / 1000).toFixed(1) + 'k', x + bW / 2, y - 6);
+    data.forEach(([cat,val],i)=>{
+      const x=pad.l+i*gap+(gap-bW)/2, bH=(val/maxV)*cH, y=pad.t+cH-bH;
+      const color=(CAT_META[cat]||CAT_META.Other).color;
+      ctx.fillStyle=color+'bb'; ctx.beginPath(); ctx.roundRect(x,y,bW,bH,4); ctx.fill();
+      ctx.fillStyle='#888880'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
+      ctx.fillText((CAT_META[cat]||CAT_META.Other).icon,x+bW/2,H-18);
+      ctx.fillText(cat,x+bW/2,H-6);
+      ctx.fillStyle=color; ctx.font='bold 9px JetBrains Mono,monospace';
+      ctx.fillText('₹'+(val/1000).toFixed(1)+'k',x+bW/2,y-6);
     });
   }
 
-  /* ── Area chart (14-day) ── */
-  function drawAreaChart() {
-    const canvas = document.getElementById('areaChart');
+  function drawAreaChart(){
+    const canvas=document.getElementById('areaChart');
     if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.offsetWidth, H = canvas.offsetHeight;
-    canvas.width = W * dpr; canvas.height = H * dpr;
-    const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
-
-    const days = [];
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const key = fmt(d);
-      const sum = getExpenses().filter(e => e.date === key).reduce((s, e) => s + e.amt, 0);
-      days.push({ label: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }), val: sum });
+    const dpr=window.devicePixelRatio||1, W=canvas.offsetWidth, H=canvas.offsetHeight;
+    canvas.width=W*dpr; canvas.height=H*dpr;
+    const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
+    const days=[];
+    for (let i=13;i>=0;i--){
+      const d=new Date(); d.setDate(d.getDate()-i);
+      const key=fmt(d), sum=getExpenses().filter(e=>e.date===key).reduce((s,e)=>s+e.amt,0);
+      days.push({label:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}),val:sum});
     }
-
-    const maxV = Math.max(...days.map(d => d.val), 500);
-    const pad  = { t: 10, r: 10, b: 36, l: 50 };
-    const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
-    ctx.clearRect(0, 0, W, H);
-
-    // grid
-    ctx.strokeStyle = '#2a2a27'; ctx.lineWidth = 0.5;
-    [0, 0.5, 1].forEach(f => {
-      const y = pad.t + cH * (1 - f);
-      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
-      ctx.fillStyle = '#444440'; ctx.font = '9px JetBrains Mono,monospace'; ctx.textAlign = 'right';
-      ctx.fillText('₹' + (maxV * f / 1000).toFixed(0) + 'k', pad.l - 6, y + 4);
+    const maxV=Math.max(...days.map(d=>d.val),500);
+    const pad={t:10,r:10,b:36,l:50};
+    const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='#2a2a27'; ctx.lineWidth=0.5;
+    [0,.5,1].forEach(f=>{
+      const y=pad.t+cH*(1-f);
+      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+      ctx.fillStyle='#444440'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='right';
+      ctx.fillText('₹'+(maxV*f/1000).toFixed(0)+'k',pad.l-6,y+4);
     });
-
-    // x labels (every other)
-    ctx.fillStyle = '#444440'; ctx.font = '9px JetBrains Mono,monospace'; ctx.textAlign = 'center';
-    days.forEach((d, i) => {
-      if (i % 2 === 0)
-        ctx.fillText(d.label, pad.l + i / (days.length - 1) * cW, H - 4);
-    });
-
-    const pts = days.map((d, i) => ({
-      x: pad.l + i / (days.length - 1) * cW,
-      y: pad.t + cH * (1 - d.val / maxV),
-    }));
-
-    // teal area
-    const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + cH);
-    grad.addColorStop(0, 'rgba(52,217,165,0.25)');
-    grad.addColorStop(1, 'rgba(52,217,165,0)');
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
-    ctx.lineTo(pts[pts.length - 1].x, pad.t + cH);
-    ctx.lineTo(pts[0].x, pad.t + cH);
-    ctx.closePath();
-    ctx.fillStyle = grad; ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
-    ctx.strokeStyle = '#34d9a5'; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
-
-    pts.forEach(p => {
-      ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-      ctx.fillStyle = '#34d9a5'; ctx.fill();
-      ctx.strokeStyle = '#0d0d0b'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle='#444440'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
+    days.forEach((d,i)=>{if(i%2===0)ctx.fillText(d.label,pad.l+i/(days.length-1)*cW,H-4);});
+    const pts=days.map((d,i)=>({x:pad.l+i/(days.length-1)*cW,y:pad.t+cH*(1-d.val/maxV)}));
+    const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+cH);
+    grad.addColorStop(0,'rgba(52,217,165,0.25)'); grad.addColorStop(1,'rgba(52,217,165,0)');
+    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+    pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+    ctx.lineTo(pts[pts.length-1].x,pad.t+cH); ctx.lineTo(pts[0].x,pad.t+cH);
+    ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+    pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+    ctx.strokeStyle='#34d9a5'; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.stroke();
+    pts.forEach(p=>{
+      ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2);
+      ctx.fillStyle='#34d9a5'; ctx.fill();
+      ctx.strokeStyle='#0d0d0b'; ctx.lineWidth=1.5; ctx.stroke();
     });
   }
 
-  /* ── Top 5 table ── */
-  function renderTopTable() {
-    const top5 = [...getExpenses()].sort((a, b) => b.amt - a.amt).slice(0, 5);
-    const rankColors = ['#f5b942', '#888880', '#f07060', '#8b7cf8', '#34d9a5'];
-    document.getElementById('topTable').innerHTML = `
-      <thead><tr>
-        <th>#</th><th>Description</th><th>Category</th><th style="text-align:right">Amount</th>
-      </tr></thead>
-      <tbody>
-        ${top5.map((e, i) => {
-          const m = CAT_META[e.cat] || CAT_META.Other;
-          return `<tr>
-            <td><span class="rank-badge" style="background:${rankColors[i]}22;color:${rankColors[i]};">${i + 1}</span></td>
-            <td>${e.desc}</td>
-            <td><span style="font-size:10px;font-family:var(--font-mono);color:${m.color};">${m.icon} ${e.cat}</span></td>
-            <td style="text-align:right;font-family:var(--font-mono);color:var(--coral);">${fmt_inr(e.amt)}</td>
-          </tr>`;
-        }).join('')}
-      </tbody>`;
+  function renderTopTable(){
+    const top5=[...getExpenses()].sort((a,b)=>b.amt-a.amt).slice(0,5);
+    const rankColors=['#f5b942','#888880','#f07060','#8b7cf8','#34d9a5'];
+    document.getElementById('topTable').innerHTML=`
+      <thead><tr><th>#</th><th>Description</th><th>Category</th><th style="text-align:right">Amount</th></tr></thead>
+      <tbody>${top5.map((e,i)=>{
+        const m=CAT_META[e.cat]||CAT_META.Other;
+        return `<tr>
+          <td><span class="rank-badge" style="background:${rankColors[i]}22;color:${rankColors[i]};">${i+1}</span></td>
+          <td>${e.desc}</td>
+          <td><span style="font-size:10px;font-family:var(--font-mono);color:${m.color};">${m.icon} ${e.cat}</span></td>
+          <td style="text-align:right;font-family:var(--font-mono);color:var(--coral);">${fmt_inr(e.amt)}</td>
+        </tr>`;
+      }).join('')}</tbody>`;
   }
 
-  /* ── Category breakdown bars ── */
-  function renderCatBreakdown() {
-    const cats = {};
-    getExpenses().forEach(e => { cats[e.cat] = (cats[e.cat] || 0) + e.amt; });
-    const total = Object.values(cats).reduce((s, v) => s + v, 0);
+  function renderCatBreakdown(){
+    const cats={};
+    getExpenses().forEach(e=>{cats[e.cat]=(cats[e.cat]||0)+e.amt;});
+    const total=Object.values(cats).reduce((s,v)=>s+v,0);
     if (!total) return;
-    const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]);
-
-    document.getElementById('catBreakdown').innerHTML = sorted.map(([cat, val]) => {
-      const pct   = Math.round(val / total * 100);
-      const color = (CAT_META[cat] || CAT_META.Other).color;
-      const m     = CAT_META[cat] || CAT_META.Other;
+    document.getElementById('catBreakdown').innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat,val])=>{
+      const pct=Math.round(val/total*100), color=(CAT_META[cat]||CAT_META.Other).color;
+      const m=CAT_META[cat]||CAT_META.Other;
       return `<div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <div style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;">
-            ${m.icon} ${cat}
-          </div>
+          <div style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;">${m.icon} ${cat}</div>
           <div style="display:flex;gap:16px;align-items:center;">
             <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">${fmt_inr(val)}</span>
             <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:${color};">${pct}%</span>
@@ -327,32 +229,23 @@
     }).join('');
   }
 
-  /* ── Modal save ── */
-  function saveEntry() {
-    const desc = document.getElementById('fDesc').value.trim();
-    const amt  = parseFloat(document.getElementById('fAmt').value);
-    const cat  = document.getElementById('fCat').value;
-    const date = document.getElementById('fDate').value;
-    if (!desc || !amt || amt <= 0 || !date) { alert('Please fill all fields.'); return; }
-    entries.push({ id: getNextId(entries), type: _entryType, desc, cat, amt, date });
+  function saveEntry(){
+    const desc=document.getElementById('fDesc').value.trim();
+    const amt=parseFloat(document.getElementById('fAmt').value);
+    const cat=document.getElementById('fCat').value, date=document.getElementById('fDate').value;
+    if (!desc||!amt||amt<=0||!date){alert('Please fill all fields.');return;}
+    entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
     saveEntries(entries);
-    document.getElementById('fDesc').value = '';
-    document.getElementById('fAmt').value  = '';
-    closeModal();
-    renderAll();
+    document.getElementById('fDesc').value=''; document.getElementById('fAmt').value='';
+    closeModal(); renderAll();
   }
 
-  function renderAll() {
-    entries = loadEntries();
-    updateStats();
-    drawBarChart();
-    drawAreaChart();
-    renderTopTable();
-    renderCatBreakdown();
+  function renderAll(){
+    entries=loadEntries();
+    updateStats(); drawBarChart(); drawAreaChart(); renderTopTable(); renderCatBreakdown();
   }
-
   window.addEventListener('load', renderAll);
-  window.addEventListener('resize', () => { drawBarChart(); drawAreaChart(); });
+  window.addEventListener('resize',()=>{drawBarChart();drawAreaChart();});
 </script>
 </body>
 </html>

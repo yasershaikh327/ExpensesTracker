@@ -4,21 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTrack — Transactions</title>
-  <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
   <script src="~/js/site.js"></script>
   <style>
     .search-bar {
-      width: 100%;
-      background: var(--bg-card);
-      border: 1px solid var(--border-hi);
-      border-radius: var(--radius-sm);
-      color: var(--text-primary);
-      font-family: var(--font-mono);
-      font-size: 13px;
-      padding: 9px 14px;
-      outline: none;
-      margin-bottom: 14px;
-      transition: border-color 0.15s;
+      width: 100%; background: var(--bg-raised);
+      border: 1px solid var(--border-hi); border-radius: var(--radius-sm);
+      color: var(--text-primary); font-family: var(--font-mono);
+      font-size: 13px; padding: 9px 14px; outline: none;
+      margin-bottom: 14px; transition: border-color 0.15s;
     }
     .search-bar:focus { border-color: var(--purple); }
     .search-bar::placeholder { color: var(--text-muted); }
@@ -27,83 +21,70 @@
     .cat-chip {
       font-size: 11px; font-family: var(--font-mono);
       padding: 4px 10px; border-radius: 20px;
-      border: 1px solid var(--border);
-      background: transparent; color: var(--text-secondary);
-      cursor: pointer; transition: all 0.15s;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
     }
     .cat-chip:hover { border-color: var(--border-hi); color: var(--text-primary); }
     .cat-chip.active { color: #0d0d0b; border-color: transparent; }
 
+    /* Desktop table header */
     .tx-table-head {
       display: grid;
       grid-template-columns: 36px 1fr 100px 80px 90px;
-      gap: 12px;
-      padding: 8px 14px;
-      font-size: 9px; font-weight: 600;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 4px;
+      gap: 12px; padding: 8px 14px;
+      font-size: 9px; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-muted);
+      border-bottom: 1px solid var(--border); margin-bottom: 4px;
     }
     .tx-row {
       display: grid;
       grid-template-columns: 36px 1fr 100px 80px 90px;
-      gap: 12px;
-      align-items: center;
-      padding: 11px 14px;
-      border-radius: var(--radius-md);
+      gap: 12px; align-items: center;
+      padding: 11px 14px; border-radius: var(--radius-md);
       transition: background 0.12s;
     }
     .tx-row:hover { background: var(--bg-raised); }
-    .tx-row .tx-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-    .tx-row .tx-amount { font-family: var(--font-mono); font-size: 13px; font-weight: 500; text-align: right; }
-    .tx-row .tx-amount.neg { color: var(--coral); }
-    .tx-row .tx-amount.pos { color: var(--teal); }
-    .tx-row .tx-cat-badge {
-      font-size: 10px; font-family: var(--font-mono);
-      padding: 2px 8px; border-radius: 20px;
-      display: inline-block;
-    }
-    .tx-row .tx-date-col { font-size: 11px; font-family: var(--font-mono); color: var(--text-secondary); }
-    .tx-row .del-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--text-muted); font-size: 14px;
-      opacity: 0; transition: opacity 0.15s, color 0.15s;
-      padding: 4px;
-    }
-    .tx-row:hover .del-btn { opacity: 1; }
-    .tx-row .del-btn:hover { color: var(--coral); }
+    .tx-row .tx-icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px; }
+    .tx-row .tx-amount { font-family:var(--font-mono);font-size:13px;font-weight:500;text-align:right; }
+    .tx-row .tx-amount.neg { color:var(--coral); }
+    .tx-row .tx-amount.pos { color:var(--teal); }
+    .tx-cat-badge { font-size:10px;font-family:var(--font-mono);padding:2px 8px;border-radius:20px;display:inline-block; }
+    .tx-date-col { font-size:11px;font-family:var(--font-mono);color:var(--text-secondary); }
+    .del-btn { background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;opacity:0;transition:opacity 0.15s,color 0.15s;padding:4px; }
+    .tx-row:hover .del-btn { opacity:1; }
+    .del-btn:hover { color:var(--coral); }
 
     .summary-strip {
-      display: flex; gap: 20px; align-items: center;
-      padding: 12px 14px;
-      border-top: 1px solid var(--border);
-      margin-top: 8px;
-      font-size: 12px; font-family: var(--font-mono);
+      display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+      padding: 12px 14px; border-top: 1px solid var(--border);
+      margin-top: 8px; font-size: 12px; font-family: var(--font-mono);
       color: var(--text-secondary);
     }
     .summary-strip span { color: var(--text-primary); font-weight: 500; }
+
+    
   </style>
 </head>
 <body>
 <div class="shell">
   <div id="sidebar-mount"></div>
-
   <main class="main">
     <div class="topbar">
-      <div>
-        <div class="page-title">Transactions</div>
-        <div class="month-badge" id="monthBadge"></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="openDrawer()" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div>
+          <div class="page-title">Transactions</div>
+          <div class="month-badge" id="monthBadge"></div>
+        </div>
       </div>
-      <button class="add-btn" onclick="openModal()">+ Add Expense</button>
+      <button class="add-btn" onclick="openModal()">+ Add</button>
     </div>
 
     <div class="panel">
-      <!-- Search -->
       <input class="search-bar" id="searchInput" placeholder="🔍  Search transactions..." oninput="renderTxList()" />
-
-      <!-- Type filter tabs -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
         <div class="filter-tabs">
           <button class="ftab active" onclick="filterType('all',this)">All</button>
           <button class="ftab" onclick="filterType('expense',this)">Expenses</button>
@@ -111,147 +92,113 @@
         </div>
         <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-muted);" id="countLabel"></div>
       </div>
-
-      <!-- Category chips -->
       <div class="cat-chips" id="catChips"></div>
-
-      <!-- Table header -->
       <div class="tx-table-head">
-        <div></div>
-        <div>Description</div>
-        <div>Category</div>
-        <div>Date</div>
-        <div style="text-align:right;">Amount</div>
+        <div></div><div>Description</div><div>Category</div>
+        <div>Date</div><div style="text-align:right;">Amount</div>
       </div>
-
-      <!-- Rows -->
       <div id="txRows" style="max-height:520px;overflow-y:auto;"></div>
-
-      <!-- Summary -->
       <div class="summary-strip" id="summaryStrip"></div>
     </div>
   </main>
-
+  <div id="mobile-nav-mount"></div>
   <div id="modal-mount"></div>
 </div>
 
 <script src="shared.js"></script>
 <script>
-  document.getElementById('sidebar-mount').innerHTML = renderSidebar('transactions');
-  document.getElementById('modal-mount').innerHTML   = renderModal();
+  document.getElementById('sidebar-mount').innerHTML    = renderSidebar('transactions');
+  document.getElementById('mobile-nav-mount').innerHTML = renderMobileNav('transactions');
+  document.getElementById('modal-mount').innerHTML      = renderModal();
 
   const now = new Date();
   document.getElementById('monthBadge').textContent =
-    now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }).toUpperCase();
+    now.toLocaleDateString('en-IN',{month:'long',year:'numeric'}).toUpperCase();
 
   let entries = loadEntries();
-  let typeFilter = 'all';
-  let catFilter  = 'all';
+  let typeFilter='all', catFilter='all';
 
-  /* ── Build category chips ── */
   function buildCatChips() {
     const cats = ['all', ...Object.keys(CAT_META)];
-    document.getElementById('catChips').innerHTML = cats.map(c => {
-      const color = c !== 'all' ? (CAT_META[c] || CAT_META.Other).color : '#8b7cf8';
-      const isActive = catFilter === c;
+    document.getElementById('catChips').innerHTML = cats.map(c=>{
+      const color = c!=='all' ? (CAT_META[c]||CAT_META.Other).color : '#8b7cf8';
+      const isActive = catFilter===c;
       const style = isActive ? `background:${color};color:#0d0d0b;` : '';
-      return `<button class="cat-chip${isActive ? ' active' : ''}" style="${style}"
-        onclick="filterCat('${c}',this,'${color}')">${c === 'all' ? '⚡ All categories' : (CAT_META[c]?.icon || '') + ' ' + c}</button>`;
+      return `<button class="cat-chip${isActive?' active':''}" style="${style}"
+        onclick="filterCat('${c}','${color}')">${c==='all'?'⚡ All':(CAT_META[c]?.icon||'')+' '+c}</button>`;
     }).join('');
   }
 
-  function filterType(f, btn) {
-    typeFilter = f;
-    btn.closest('.filter-tabs').querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderTxList();
+  function filterType(f,btn){
+    typeFilter=f;
+    btn.closest('.filter-tabs').querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); renderTxList();
   }
+  function filterCat(c){catFilter=c;buildCatChips();renderTxList();}
 
-  function filterCat(c, btn, color) {
-    catFilter = c;
-    buildCatChips();
-    renderTxList();
-  }
-
-  /* ── TX list ── */
   function renderTxList() {
     const search = document.getElementById('searchInput').value.trim().toLowerCase();
-    let data = [...entries].sort((a, b) => b.date.localeCompare(a.date));
-    if (typeFilter === 'expense') data = data.filter(e => e.type === 'expense');
-    if (typeFilter === 'income')  data = data.filter(e => e.type === 'income');
-    if (catFilter !== 'all')      data = data.filter(e => e.cat === catFilter);
-    if (search) data = data.filter(e =>
-      e.desc.toLowerCase().includes(search) ||
-      e.cat.toLowerCase().includes(search)
-    );
+    let data = [...entries].sort((a,b)=>b.date.localeCompare(a.date));
+    if (typeFilter==='expense') data=data.filter(e=>e.type==='expense');
+    if (typeFilter==='income')  data=data.filter(e=>e.type==='income');
+    if (catFilter!=='all')      data=data.filter(e=>e.cat===catFilter);
+    if (search) data=data.filter(e=>e.desc.toLowerCase().includes(search)||e.cat.toLowerCase().includes(search));
 
-    document.getElementById('countLabel').textContent = data.length + ' entries';
-
-    if (!data.length) {
-      document.getElementById('txRows').innerHTML = '<div class="empty-state">no transactions match your filters</div>';
-      document.getElementById('summaryStrip').innerHTML = '';
-      return;
+    document.getElementById('countLabel').textContent=data.length+' entries';
+    if (!data.length){
+      document.getElementById('txRows').innerHTML='<div class="empty-state">no transactions match</div>';
+      document.getElementById('summaryStrip').innerHTML=''; return;
     }
 
-    document.getElementById('txRows').innerHTML = data.map(e => {
-      const m    = CAT_META[e.cat] || CAT_META.Other;
-      const sign = e.type === 'income' ? '+' : '-';
-      const cls  = e.type === 'income' ? 'pos' : 'neg';
-      const d    = new Date(e.date + 'T00:00:00');
-      const dStr = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' });
+    document.getElementById('txRows').innerHTML = data.map(e=>{
+      const m=CAT_META[e.cat]||CAT_META.Other;
+      const sign=e.type==='income'?'+':'-', cls=e.type==='income'?'pos':'neg';
+      const dStr=new Date(e.date+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
       return `<div class="tx-row">
         <div class="tx-icon" style="background:${m.color}22;">${m.icon}</div>
         <div>
           <div style="font-size:13px;font-weight:600;">${e.desc}</div>
           <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-muted);">#${e.id}</div>
         </div>
-        <div>
+        <div class="cat-badge-cell">
           <span class="tx-cat-badge" style="background:${m.color}22;color:${m.color};">${e.cat}</span>
         </div>
         <div class="tx-date-col">${dStr}</div>
-        <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
+        <div class="amount-del-cell" style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
           <div class="tx-amount ${cls}">${sign}${fmt_inr(e.amt)}</div>
-          <button class="del-btn" onclick="deleteEntry(${e.id})" title="Delete">✕</button>
+          <button class="del-btn" onclick="deleteEntry(${e.id})">✕</button>
         </div>
       </div>`;
     }).join('');
 
-    // Summary strip
-    const totalExp = data.filter(e => e.type === 'expense').reduce((s, e) => s + e.amt, 0);
-    const totalInc = data.filter(e => e.type === 'income').reduce((s, e) => s + e.amt, 0);
-    document.getElementById('summaryStrip').innerHTML = `
+    const totalExp=data.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amt,0);
+    const totalInc=data.filter(e=>e.type==='income').reduce((s,e)=>s+e.amt,0);
+    document.getElementById('summaryStrip').innerHTML=`
       <div>Shown: <span>${data.length}</span></div>
       <div>Expenses: <span style="color:var(--coral)">${fmt_inr(totalExp)}</span></div>
       <div>Income: <span style="color:var(--teal)">${fmt_inr(totalInc)}</span></div>
-      <div>Net: <span style="color:${totalInc - totalExp >= 0 ? 'var(--teal)' : 'var(--coral)'}">${fmt_inr(Math.abs(totalInc - totalExp))}</span></div>`;
+      <div>Net: <span style="color:${totalInc-totalExp>=0?'var(--teal)':'var(--coral)'}">${fmt_inr(Math.abs(totalInc-totalExp))}</span></div>`;
   }
 
-  function deleteEntry(id) {
+  function deleteEntry(id){
     if (!confirm('Delete this entry?')) return;
-    entries = entries.filter(e => e.id !== id);
-    saveEntries(entries);
-    renderTxList();
+    entries=entries.filter(e=>e.id!==id);
+    saveEntries(entries); renderTxList();
   }
 
-  /* ── Modal save ── */
-  function saveEntry() {
-    const desc = document.getElementById('fDesc').value.trim();
-    const amt  = parseFloat(document.getElementById('fAmt').value);
-    const cat  = document.getElementById('fCat').value;
-    const date = document.getElementById('fDate').value;
-    if (!desc || !amt || amt <= 0 || !date) { alert('Please fill all fields.'); return; }
-    entries.push({ id: getNextId(entries), type: _entryType, desc, cat, amt, date });
+  function saveEntry(){
+    const desc=document.getElementById('fDesc').value.trim();
+    const amt=parseFloat(document.getElementById('fAmt').value);
+    const cat=document.getElementById('fCat').value;
+    const date=document.getElementById('fDate').value;
+    if (!desc||!amt||amt<=0||!date){alert('Please fill all fields.');return;}
+    entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
     saveEntries(entries);
-    document.getElementById('fDesc').value = '';
-    document.getElementById('fAmt').value  = '';
-    closeModal();
-    renderTxList();
+    document.getElementById('fDesc').value=''; document.getElementById('fAmt').value='';
+    closeModal(); renderTxList();
   }
 
-  window.addEventListener('load', () => {
-    buildCatChips();
-    renderTxList();
-  });
+  window.addEventListener('load',()=>{buildCatChips();renderTxList();});
 </script>
 </body>
 </html>

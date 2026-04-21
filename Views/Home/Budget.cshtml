@@ -4,93 +4,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTrack — Budget</title>
-  <link rel="stylesheet" href="shared.css" />
   <link rel="stylesheet" href="~/css/site.css" />
   <script src="~/js/site.js"></script>
   <style>
-    .budget-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
+    .budget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .budget-card {
-      background: var(--bg-raised);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 18px 20px;
+      background: var(--bg-raised); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 18px 20px;
       transition: border-color 0.2s;
     }
     .budget-card:hover { border-color: var(--border-hi); }
-    .budget-card-top {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 14px;
-    }
-    .budget-cat-name {
-      font-size: 14px; font-weight: 700;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .budget-cat-icon {
-      width: 32px; height: 32px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 15px;
-    }
-    .budget-pct-badge {
-      font-family: var(--font-mono); font-size: 11px;
-      padding: 3px 10px; border-radius: 20px;
-      font-weight: 500;
-    }
-    .budget-amounts {
-      display: flex; justify-content: space-between;
-      font-family: var(--font-mono); font-size: 11px;
-      color: var(--text-secondary); margin-bottom: 8px;
-    }
-    .budget-amounts .spent-val { font-size: 20px; font-weight: 500; line-height: 1; margin-bottom: 2px; }
-    .budget-amounts .limit-val { font-size: 11px; }
-    .bbar-bg { height: 6px; background: var(--bg-deep); border-radius: 3px; overflow: hidden; }
-    .bbar-fill { height: 6px; border-radius: 3px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
-
-    .budget-remaining {
-      margin-top: 10px; font-size: 10px;
-      font-family: var(--font-mono); color: var(--text-secondary);
-    }
-
-    /* Edit budget modal */
-    .edit-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--text-muted); font-size: 12px;
-      font-family: var(--font-mono);
-      padding: 2px 6px; border-radius: 4px;
-      transition: color 0.15s, background 0.15s;
-    }
-    .edit-btn:hover { color: var(--purple); background: var(--purple-glow); }
-
-    .overview-strip {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 14px; margin-bottom: 24px;
-    }
-
-    /*media (max-width: 800px) { .budget-grid { grid-template-columns: 1fr; } }*/
+    .budget-card-top { display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px; }
+    .budget-cat-name { font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px; }
+    .budget-cat-icon { width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px; }
+    .budget-pct-badge { font-family:var(--font-mono);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500; }
+    .bbar-bg { height:6px;background:var(--bg-deep);border-radius:3px;overflow:hidden; }
+    .bbar-fill { height:6px;border-radius:3px;transition:width 0.6s cubic-bezier(0.4,0,0.2,1); }
+    .budget-remaining { margin-top:10px;font-size:10px;font-family:var(--font-mono);color:var(--text-secondary); }
+    .overview-strip { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px; }
+    
   </style>
 </head>
 <body>
 <div class="shell">
   <div id="sidebar-mount"></div>
-
   <main class="main">
     <div class="topbar">
-      <div>
-        <div class="page-title">Budget</div>
-        <div class="month-badge" id="monthBadge"></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button class="menu-toggle" onclick="openDrawer()" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </button>
+        <div>
+          <div class="page-title">Budget</div>
+          <div class="month-badge" id="monthBadge"></div>
+        </div>
       </div>
-      <button class="add-btn" onclick="openModal()">+ Add Expense</button>
+      <button class="add-btn" onclick="openModal()">+ Add</button>
     </div>
 
-    <!-- Overview stats -->
     <div class="overview-strip">
-      <div class="stat-card">
+      <div class="stat-card c-amber">
         <div class="stat-label">Total Budget</div>
         <div class="stat-value amber" id="totalBudget">₹0</div>
-        <div class="stat-change">across all categories</div>
+        <div class="stat-change">all categories</div>
       </div>
       <div class="stat-card c-coral">
         <div class="stat-label">Total Spent</div>
@@ -104,132 +60,91 @@
       </div>
     </div>
 
-    <!-- Budget cards -->
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">Category Budgets</div>
-        <div class="panel-sub">Click a limit to edit it</div>
+        <div class="panel-sub">Tap limit to edit</div>
       </div>
       <div class="budget-grid" id="budgetGrid"></div>
     </div>
   </main>
-
+  <div id="mobile-nav-mount"></div>
   <div id="modal-mount"></div>
 </div>
 
 <script src="shared.js"></script>
 <script>
-  document.getElementById('sidebar-mount').innerHTML = renderSidebar('budget');
-  document.getElementById('modal-mount').innerHTML   = renderModal();
+  document.getElementById('sidebar-mount').innerHTML    = renderSidebar('budget');
+  document.getElementById('mobile-nav-mount').innerHTML = renderMobileNav('budget');
+  document.getElementById('modal-mount').innerHTML      = renderModal();
 
   const now = new Date();
   document.getElementById('monthBadge').textContent =
-    now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }).toUpperCase();
+    now.toLocaleDateString('en-IN',{month:'long',year:'numeric'}).toUpperCase();
 
   let entries = loadEntries();
+  let budgets = (()=>{try{return JSON.parse(sessionStorage.getItem('ft_budgets'))||{...BUDGET_LIMITS};}catch{return{...BUDGET_LIMITS};}})();
+  const saveBudgets=()=>sessionStorage.setItem('ft_budgets',JSON.stringify(budgets));
+  const getExpenses=()=>entries.filter(e=>e.type==='expense');
+  const getCatSpend=()=>{const c={};getExpenses().forEach(e=>{c[e.cat]=(c[e.cat]||0)+e.amt;});return c;};
 
-  // Load editable budget limits from sessionStorage
-  let budgets = (() => {
-    try { return JSON.parse(sessionStorage.getItem('ft_budgets')) || { ...BUDGET_LIMITS }; }
-    catch { return { ...BUDGET_LIMITS }; }
-  })();
-
-  function saveBudgets() { sessionStorage.setItem('ft_budgets', JSON.stringify(budgets)); }
-
-  function getExpenses() { return entries.filter(e => e.type === 'expense'); }
-  function getCatSpend() {
-    const cats = {};
-    getExpenses().forEach(e => { cats[e.cat] = (cats[e.cat] || 0) + e.amt; });
-    return cats;
+  function updateOverview(catSpend){
+    const totalBudget=Object.values(budgets).reduce((s,v)=>s+v,0);
+    const totalSpent=Object.entries(catSpend).filter(([c])=>budgets[c]!==undefined).reduce((s,[,v])=>s+v,0);
+    const remaining=Math.max(totalBudget-totalSpent,0);
+    const pct=Math.round(totalSpent/totalBudget*100);
+    document.getElementById('totalBudget').textContent=fmt_inr(totalBudget);
+    document.getElementById('totalSpent').textContent=fmt_inr(totalSpent);
+    document.getElementById('totalRemaining').textContent=fmt_inr(remaining);
+    document.getElementById('spentPct').innerHTML=`<span class="${pct>80?'down':'up'}">${pct}% of budget</span>`;
+    const daysLeft=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate();
+    document.getElementById('remainingDays').innerHTML=`<span class="up">${daysLeft} days left</span>`;
   }
 
-  /* ── Overview ── */
-  function updateOverview(catSpend) {
-    const totalBudget    = Object.values(budgets).reduce((s, v) => s + v, 0);
-    const totalSpent     = Object.entries(catSpend)
-      .filter(([c]) => budgets[c] !== undefined)
-      .reduce((s, [, v]) => s + v, 0);
-    const totalRemaining = Math.max(totalBudget - totalSpent, 0);
-    const pct = Math.round(totalSpent / totalBudget * 100);
-
-    document.getElementById('totalBudget').textContent    = fmt_inr(totalBudget);
-    document.getElementById('totalSpent').textContent     = fmt_inr(totalSpent);
-    document.getElementById('totalRemaining').textContent = fmt_inr(totalRemaining);
-    document.getElementById('spentPct').innerHTML =
-      `<span class="${pct > 80 ? 'down' : 'up'}">${pct}% of total budget</span>`;
-
-    const daysLeft = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate();
-    document.getElementById('remainingDays').innerHTML =
-      `<span class="up">${daysLeft} days left this month</span>`;
-  }
-
-  /* ── Budget cards ── */
-  function renderBudget() {
-    const catSpend = getCatSpend();
-    updateOverview(catSpend);
-    const el = document.getElementById('budgetGrid');
-
-    el.innerHTML = Object.entries(budgets).map(([cat, limit]) => {
-      const spent = catSpend[cat] || 0;
-      const pct   = Math.min(Math.round(spent / limit * 100), 100);
-      const m     = CAT_META[cat] || CAT_META.Other;
-      const color = pct > 80 ? '#f07060' : pct > 60 ? '#f5b942' : '#34d9a5';
-      const remaining = Math.max(limit - spent, 0);
-      const badgeBg   = pct > 80 ? 'rgba(240,112,96,0.15)' : pct > 60 ? 'rgba(245,185,66,0.15)' : 'rgba(52,217,165,0.12)';
-
+  function renderBudget(){
+    const catSpend=getCatSpend(); updateOverview(catSpend);
+    document.getElementById('budgetGrid').innerHTML=Object.entries(budgets).map(([cat,limit])=>{
+      const spent=catSpend[cat]||0, pct=Math.min(Math.round(spent/limit*100),100);
+      const m=CAT_META[cat]||CAT_META.Other;
+      const color=pct>80?'#f07060':pct>60?'#f5b942':'#34d9a5';
+      const badgeBg=pct>80?'rgba(240,112,96,0.15)':pct>60?'rgba(245,185,66,0.15)':'rgba(52,217,165,0.12)';
+      const remaining=Math.max(limit-spent,0);
       return `<div class="budget-card">
         <div class="budget-card-top">
           <div class="budget-cat-name">
-            <div class="budget-cat-icon" style="background:${m.color}22;">${m.icon}</div>
-            ${cat}
+            <div class="budget-cat-icon" style="background:${m.color}22;">${m.icon}</div>${cat}
           </div>
           <span class="budget-pct-badge" style="background:${badgeBg};color:${color};">${pct}%</span>
         </div>
         <div style="margin-bottom:10px;">
-          <div class="spent-val" style="color:${color};">${fmt_inr(spent)}</div>
-          <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-secondary);">
-            of
-            <span style="cursor:pointer;border-bottom:1px dashed var(--border-hi);"
-              onclick="editLimit('${cat}')">${fmt_inr(limit)}</span>
-            limit
-          </div>
+          <div style="font-family:var(--font-mono);font-size:20px;font-weight:500;color:${color};">${fmt_inr(spent)}</div>
+          <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-secondary);">of <span style="cursor:pointer;border-bottom:1px dashed var(--border-hi);" onclick="editLimit('${cat}')">${fmt_inr(limit)}</span> limit</div>
         </div>
-        <div class="bbar-bg">
-          <div class="bbar-fill" style="width:${pct}%;background:${color};"></div>
-        </div>
+        <div class="bbar-bg"><div class="bbar-fill" style="width:${pct}%;background:${color};"></div></div>
         <div class="budget-remaining">
-          ${remaining > 0
-            ? `<span class="up">₹${(remaining).toLocaleString('en-IN')} remaining</span>`
-            : `<span class="down">Over budget by ₹${(spent - limit).toLocaleString('en-IN')}</span>`}
+          ${remaining>0?`<span class="up">₹${remaining.toLocaleString('en-IN')} remaining</span>`:`<span class="down">Over by ₹${(spent-limit).toLocaleString('en-IN')}</span>`}
         </div>
       </div>`;
     }).join('');
   }
 
-  function editLimit(cat) {
-    const current = budgets[cat];
-    const val = prompt(`Set budget limit for ${cat} (current: ₹${current.toLocaleString('en-IN')}):`, current);
-    if (val === null) return;
-    const num = parseFloat(val);
-    if (!num || num <= 0) { alert('Enter a valid amount.'); return; }
-    budgets[cat] = num;
-    saveBudgets();
-    renderBudget();
+  function editLimit(cat){
+    const val=prompt(`Budget for ${cat} (current: ₹${budgets[cat].toLocaleString('en-IN')}):`,budgets[cat]);
+    if (val===null) return;
+    const num=parseFloat(val);
+    if (!num||num<=0){alert('Enter a valid amount.');return;}
+    budgets[cat]=num; saveBudgets(); renderBudget();
   }
 
-  /* ── Modal save ── */
-  function saveEntry() {
-    const desc = document.getElementById('fDesc').value.trim();
-    const amt  = parseFloat(document.getElementById('fAmt').value);
-    const cat  = document.getElementById('fCat').value;
-    const date = document.getElementById('fDate').value;
-    if (!desc || !amt || amt <= 0 || !date) { alert('Please fill all fields.'); return; }
-    entries.push({ id: getNextId(entries), type: _entryType, desc, cat, amt, date });
+  function saveEntry(){
+    const desc=document.getElementById('fDesc').value.trim();
+    const amt=parseFloat(document.getElementById('fAmt').value);
+    const cat=document.getElementById('fCat').value, date=document.getElementById('fDate').value;
+    if (!desc||!amt||amt<=0||!date){alert('Please fill all fields.');return;}
+    entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
     saveEntries(entries);
-    document.getElementById('fDesc').value = '';
-    document.getElementById('fAmt').value  = '';
-    closeModal();
-    renderBudget();
+    document.getElementById('fDesc').value=''; document.getElementById('fAmt').value='';
+    closeModal(); renderBudget();
   }
 
   window.addEventListener('load', renderBudget);

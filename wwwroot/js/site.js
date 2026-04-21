@@ -1,6 +1,5 @@
 ﻿/* ═══════════════════════════════════════
    shared.js  —  FinTrack shared data & helpers
-   All pages include this file first
 ═══════════════════════════════════════ */
 
 const CAT_META = {
@@ -23,12 +22,9 @@ const fmt = d => d.toISOString().split('T')[0];
 const fmt_inr = n => '₹' + Math.round(n).toLocaleString('en-IN');
 
 function randDate(daysAgo) {
-    const d = new Date();
-    d.setDate(d.getDate() - daysAgo);
-    return fmt(d);
+    const d = new Date(); d.setDate(d.getDate() - daysAgo); return fmt(d);
 }
 
-/* ── Seed data stored in sessionStorage so edits persist across pages ── */
 const SEED = [
     { id: 1, type: 'income', desc: 'Salary credit', cat: 'Income', amt: 78000, date: randDate(4) },
     { id: 2, type: 'expense', desc: 'Zomato order', cat: 'Food', amt: 450, date: randDate(1) },
@@ -48,29 +44,34 @@ const SEED = [
 ];
 
 function loadEntries() {
-    try {
-        const raw = sessionStorage.getItem('ft_entries');
-        return raw ? JSON.parse(raw) : SEED;
-    } catch { return SEED; }
+    try { const raw = sessionStorage.getItem('ft_entries'); return raw ? JSON.parse(raw) : SEED; }
+    catch { return SEED; }
 }
+function saveEntries(entries) { sessionStorage.setItem('ft_entries', JSON.stringify(entries)); }
+function getNextId(entries) { return entries.length ? Math.max(...entries.map(e => e.id)) + 1 : 1; }
 
-function saveEntries(entries) {
-    sessionStorage.setItem('ft_entries', JSON.stringify(entries));
-}
+/* ── Nav page definitions ── */
+const NAV_PAGES = [
+    {
+        id: 'dashboard', label: 'Dashboard', href: '/Home/Index',
+        icon: `<rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/>`,
+    },
+    {
+        id: 'transactions', label: 'Transactions', href: '/Home/Transactions',
+        icon: `<path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
+    },
+    {
+        id: 'budget', label: 'Budget', href: '/Home/Budget',
+        icon: `<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
+    },
+    {
+        id: 'reports', label: 'Reports', href: '/Home/Reports',
+        icon: `<path d="M2 14V9l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`,
+    },
+];
 
-function getNextId(entries) {
-    return entries.length ? Math.max(...entries.map(e => e.id)) + 1 : 1;
-}
-
-/* ── Shared sidebar HTML injected by each page ── */
+/* ── Desktop sidebar HTML ── */
 function renderSidebar(activePage) {
-    const pages = [
-        { id: 'dashboard', label: 'Dashboard', href: '/Home/Index', icon: `<rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/>` },
-        { id: 'transactions', label: 'Transactions', href: '/Home/Transactions', icon: `<path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>` },
-        { id: 'budget', label: 'Budget', href: '/Home/Budget', icon: `<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>` },
-        { id: 'reports', label: 'Reports', href: '/Home/Reports', icon: `<path d="M2 14V9l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>` },
-    ];
-
     return `
   <aside class="sidebar">
     <div class="logo">
@@ -80,7 +81,7 @@ function renderSidebar(activePage) {
     </div>
     <nav class="nav">
       <div class="nav-label">Menu</div>
-      ${pages.map(p => `
+      ${NAV_PAGES.map(p => `
         <a class="nav-item${p.id === activePage ? ' active' : ''}" href="${p.href}">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none">${p.icon}</svg>
           ${p.label}
@@ -98,7 +99,62 @@ function renderSidebar(activePage) {
   </aside>`;
 }
 
-/* ── Shared Add-Expense modal HTML ── */
+/* ── Mobile drawer + bottom nav HTML ── */
+function renderMobileNav(activePage) {
+    return `
+  <!-- Backdrop -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+
+  <!-- Slide-in drawer -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="drawer-logo">
+      <div class="logo-mark" style="margin-bottom:8px;">₹</div>
+      <div class="logo-text">FinTrack</div>
+      <div class="logo-sub">v2.1 · dark pro</div>
+    </div>
+    <nav class="drawer-nav">
+      <div class="nav-label">Menu</div>
+      ${NAV_PAGES.map(p => `
+        <a class="nav-item${p.id === activePage ? ' active' : ''}" href="${p.href}" onclick="closeDrawer()">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none">${p.icon}</svg>
+          ${p.label}
+        </a>`).join('')}
+    </nav>
+    <div class="drawer-footer">
+      <div class="avatar-row">
+        <div class="avatar">AK</div>
+        <div>
+          <div class="avatar-name">Arjun K.</div>
+          <div class="avatar-role">personal · goa</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom tab bar -->
+  <nav class="bottom-nav">
+    ${NAV_PAGES.map(p => `
+      <a class="btab${p.id === activePage ? ' active' : ''}" href="${p.href}">
+        <svg viewBox="0 0 16 16" fill="none">${p.icon}</svg>
+        <span>${p.label}</span>
+        <div class="btab-dot"></div>
+      </a>`).join('')}
+  </nav>`;
+}
+
+/* ── Drawer open/close ── */
+function openDrawer() {
+    document.getElementById('mobileDrawer').classList.add('open');
+    document.getElementById('drawerBackdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+    document.getElementById('mobileDrawer').classList.remove('open');
+    document.getElementById('drawerBackdrop').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+/* ── Add modal HTML ── */
 function renderModal() {
     return `
   <div class="overlay" id="overlay" onclick="closeModal(event)">
@@ -117,7 +173,7 @@ function renderModal() {
       </div>
       <div class="form-row">
         <label>Amount (₹)</label>
-        <input type="number" id="fAmt" placeholder="0.00" min="0" />
+        <input type="number" id="fAmt" placeholder="0.00" min="0" inputmode="decimal" />
       </div>
       <div class="form-row">
         <label>Category</label>
@@ -144,7 +200,7 @@ function renderModal() {
   </div>`;
 }
 
-/* ── Shared modal logic ── */
+/* ── Shared modal state & logic ── */
 let _entryType = 'expense';
 
 function openModal() {
@@ -162,5 +218,3 @@ function setType(t) {
     if (t === 'income') document.getElementById('fCat').value = 'Income';
     else if (document.getElementById('fCat').value === 'Income') document.getElementById('fCat').value = 'Food';
 }
-
-/* saveEntry is defined per-page so it can call that page's render fn */
