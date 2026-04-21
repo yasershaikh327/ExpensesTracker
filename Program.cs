@@ -1,3 +1,8 @@
+
+using DotNetEnv;
+
+Env.Load();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -25,5 +30,6 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+var dbHost = Environment.GetEnvironmentVariable("DatabaseConnection");
 
 app.Run();
