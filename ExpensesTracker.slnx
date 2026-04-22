@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="../DataAccess/DataAccess.csproj" Id="686fe166-b0f2-4cef-9d34-d511f0f516f6" />
   <Project Path="ExpensesTracker.csproj" />
 </Solution>

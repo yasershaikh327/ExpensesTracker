@@ -1,5 +1,10 @@
 
+using DataAccess.Mappers;
+using DataAccess.Mappers.Interface;
+using DataAccess.Repository;
+using DataAccess.Repository.Interface;
 using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 
 Env.Load();
 
@@ -7,6 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IRegistrationMapper, RegistrationMapper>();  
+builder.Services.AddScoped<IMemberRepository, MemberRepository>();  
+
+builder.Services.AddDbContext<DbPostgreContext>(options =>
+    options.UseNpgsql(Environment.GetEnvironmentVariable("DatabaseConnection"))
+);
 
 var app = builder.Build();
 
@@ -30,7 +41,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-//Environment variables
-Environment.GetEnvironmentVariable("DatabaseConnection");
 
 app.Run();

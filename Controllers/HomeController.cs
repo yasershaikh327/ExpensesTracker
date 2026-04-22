@@ -1,3 +1,4 @@
+using DataAccess.Repository.Interface;
 using ExpensesTracker.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -7,10 +8,12 @@ namespace ExpensesTracker.Controllers
     public class HomeController : Controller
     {
         private readonly IConfiguration _configuration;
+        private readonly IMemberRepository _memberRepository;
 
-        public HomeController(IConfiguration configuration)
+        public HomeController(IConfiguration configuration,IMemberRepository memberRepository)
         {
             _configuration = configuration;
+            _memberRepository = memberRepository;
         }
 
         public IActionResult Index()
@@ -18,28 +21,31 @@ namespace ExpensesTracker.Controllers
             return View();
         }
 
-        public IActionResult Transactions()
+        public IActionResult About()
         {
             return View();
         }
-        public IActionResult Budget()
+        public IActionResult Contact()
         {
             return View();
         }
-        public IActionResult Reports()
-        {
-            return View();
-        }
-
-        public IActionResult Privacy()
+        public IActionResult Login()
         {
             return View();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Registration()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View();
         }
+
+        [HttpPost]
+        public JsonResult Register([FromBody]RegistrationDTO registration)
+        {
+            var data = _memberRepository.AddMember(registration);
+            return Json(new { success = true, message = data });
+        }
+
+   
     }
 }

@@ -1,0 +1,318 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinTrack — Create Account</title>
+  <link rel="stylesheet" href="~/css/public.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body { display: flex; flex-direction: column; min-height: 100vh; }
+    .auth-wrapper {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 40px 20px;
+    }
+    .auth-outer { width: 100%; max-width: 460px; }
+
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0;
+      background-image: radial-gradient(circle, rgba(52,217,165,0.05) 1px, transparent 1px);
+      background-size: 36px 36px; pointer-events: none;
+    }
+    .bg-glow {
+      position: fixed; top: -80px; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse, rgba(52,217,165,0.07) 0%, transparent 65%);
+      pointer-events: none; z-index: 0;
+    }
+    .auth-outer { position: relative; z-index: 1; }
+
+    .pw-wrap { position: relative; }
+    .pw-wrap .form-input { padding-right: 44px; }
+    .pw-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); font-size: 14px; padding: 4px;
+      transition: color 0.15s;
+    }
+    .pw-toggle:hover { color: var(--text-secondary); }
+
+    /* Password strength bar */
+    .pw-strength { margin-top: 8px; }
+    .pw-strength-bar {
+      height: 3px; background: var(--bg-raised); border-radius: 2px;
+      overflow: hidden; margin-bottom: 4px;
+    }
+    .pw-strength-fill { height: 3px; border-radius: 2px; transition: width 0.3s, background 0.3s; width: 0; }
+    .pw-strength-label { font-size: 10px; font-family: var(--font-mono); color: var(--text-muted); }
+
+    /* Field row for 2-col */
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    /* Requirements checklist */
+    .req-list { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .req-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);
+      transition: color 0.2s;
+    }
+    .req-item.met { color: var(--teal); }
+    .req-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--text-muted); flex-shrink: 0; transition: background 0.2s;
+    }
+    .req-item.met .req-dot { background: var(--teal); }
+
+    .terms-row {
+      display: flex; gap: 10px; align-items: flex-start;
+      margin-bottom: 22px;
+    }
+    .terms-row input { margin-top: 2px; accent-color: var(--teal); width: 14px; height: 14px; flex-shrink: 0; }
+    .terms-row label { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+    .terms-row a { color: var(--purple); text-decoration: none; }
+
+    
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<nav class="topnav" style="position:relative;z-index:10;">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-mark">₹</div>
+    <div class="nav-logo-text">FinTrack</div>
+  </a>
+ <div class="nav-links">
+    <a asp-action="Index" asp-controller="Home" class="nav-link active">Home</a>
+    <a asp-action="About" asp-controller="Home" class="nav-link">About</a>
+    <a asp-action="Contact" asp-controller="Home" class="nav-link">Contact</a>
+    <a asp-action="Login" asp-controller="Home" class="nav-link">Login</a>
+    <a asp-action="Registration" asp-controller="Home" class="nav-link cta">Get Started</a>
+  </div>
+  <button class="nav-toggle" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-menu" id="mobileMenu" style="position:relative;z-index:10;">
+    <a asp-action="Index" asp-controller="Home" class="nav-link active">Home</a>
+    <a asp-action="About" asp-controller="Home" class="nav-link">About</a>
+    <a asp-action="Contact" asp-controller="Home" class="nav-link">Contact</a>
+    <a asp-action="Login" asp-controller="Home" class="nav-link">Login</a>
+    <a asp-action="Registration" asp-controller="Home" class="nav-link cta">Get Started</a>
+</div>
+
+<div class="auth-wrapper">
+  <div class="auth-outer">
+    <div class="auth-card" style="--accent:var(--teal);">
+
+      <!-- Logo -->
+      <div class="auth-logo">
+        <div class="auth-logo-mark" style="background:var(--teal);">₹</div>
+        <div class="auth-title">Create your account</div>
+        <div class="auth-sub">Start tracking your finances in 30 seconds</div>
+      </div>
+
+      <!-- Alerts -->
+      <div class="alert error"   id="regError"></div>
+      <div class="alert success" id="regSuccess"></div>
+
+      <!-- Name + Username row -->
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>Full name <span style="color:var(--coral)">*</span></label>
+          <div class="input-icon-wrap">
+            <svg class="input-icon" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            <input class="form-input" id="rName" type="text" placeholder="Arjun Kumar" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label>Email address <span style="color:var(--coral)">*</span></label>
+        <div class="input-icon-wrap">
+          <svg class="input-icon" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M1 5.5l7 4.5 7-4.5" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+          <input class="form-input" id="rEmail" type="email" placeholder="arjun@example.com" />
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label>Password <span style="color:var(--coral)">*</span></label>
+        <div class="pw-wrap">
+          <input class="form-input" id="rPassword" type="password" placeholder="Min. 8 characters"
+            oninput="checkStrength(this.value)" />
+          <button class="pw-toggle" onclick="togglePw('rPassword',this)" type="button">👁</button>
+        </div>
+        <div class="pw-strength">
+          <div class="pw-strength-bar">
+            <div class="pw-strength-fill" id="strengthFill"></div>
+          </div>
+          <div class="pw-strength-label" id="strengthLabel">Enter a password</div>
+        </div>
+        <div class="req-list">
+          <div class="req-item" id="req-len"><div class="req-dot"></div>At least 8 characters</div>
+          <div class="req-item" id="req-num"><div class="req-dot"></div>Contains a number</div>
+          <div class="req-item" id="req-sym"><div class="req-dot"></div>Contains a special character (!@@#$...)</div>
+        </div>
+      </div>
+
+      <!-- Confirm password -->
+      <div class="form-group">
+        <label>Confirm password <span style="color:var(--coral)">*</span></label>
+        <div class="pw-wrap">
+          <input class="form-input" id="rConfirm" type="password" placeholder="Re-enter password"
+            oninput="checkMatch()" />
+          <button class="pw-toggle" onclick="togglePw('rConfirm',this)" type="button">👁</button>
+        </div>
+        <div class="form-hint" id="matchHint"></div>
+      </div>
+
+      <!-- Terms -->
+      <div class="terms-row">
+        <input type="checkbox" id="termsCheck" />
+        <label for="termsCheck">
+          I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. I understand my data stays local to my browser.
+        </label>
+      </div>
+
+      <button class="btn btn-teal btn-full" onclick="registerSubmit()" id="regBtn">
+        Create account →
+      </button>
+
+      <div class="auth-footer" style="margin-top:20px;">
+        Already have an account?
+        <a href="login.html">Sign in →</a>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <a href="index.html" style="font-size:12px;color:var(--text-muted);text-decoration:none;font-family:var(--font-mono);">← Back to home</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleMobileMenu(){document.getElementById('mobileMenu').classList.toggle('open');}
+
+  function togglePw(id, btn) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+    btn.textContent = el.type === 'password' ? '👁' : '🙈';
+  }
+
+  
+
+  function checkStrength(pw) {
+    const fill  = document.getElementById('strengthFill');
+    const label = document.getElementById('strengthLabel');
+    let score = 0;
+    if (pw.length >= 8)   score++;
+    if (pw.length >= 12)  score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[!@@#$%^&*(),.?":{}|<>]/.test(pw)) score++;
+    if (/[A-Z]/.test(pw)) score++;
+
+    const levels = [
+      { w:'0%',     bg:'transparent', t:'Enter a password' },
+      { w:'25%',    bg:'var(--coral)',  t:'Weak' },
+      { w:'50%',    bg:'var(--amber)',  t:'Fair' },
+      { w:'75%',    bg:'var(--purple)', t:'Good' },
+      { w:'100%',   bg:'var(--teal)',   t:'Strong ✓' },
+    ];
+    const lvl = Math.min(score, 4);
+    fill.style.width      = levels[lvl].w;
+    fill.style.background = levels[lvl].bg;
+    label.textContent     = levels[lvl].t;
+    label.style.color     = score === 0 ? 'var(--text-muted)' : levels[lvl].bg;
+
+    // Requirements
+    setReq('req-len', pw.length >= 8);
+    setReq('req-num', /[0-9]/.test(pw));
+    setReq('req-sym', /[!@@#$%^&*(),.?":{}|<>]/.test(pw));
+
+    checkMatch();
+  }
+
+  function setReq(id, met) {
+    document.getElementById(id).classList.toggle('met', met);
+  }
+
+  function checkMatch() {
+    const pw = document.getElementById('rPassword').value;
+    const cf = document.getElementById('rConfirm').value;
+    const h  = document.getElementById('matchHint');
+    if (!cf) { h.textContent = ''; return; }
+    if (pw === cf) { h.textContent = '✓ Passwords match'; h.style.color = 'var(--teal)'; }
+    else           { h.textContent = '✗ Passwords do not match'; h.style.color = 'var(--coral)'; }
+  }
+
+  function registerSubmit() {
+    const name     = document.getElementById('rName').value.trim();
+    const email    = document.getElementById('rEmail').value.trim();
+    const pw       = document.getElementById('rPassword').value;
+    const cf       = document.getElementById('rConfirm').value;
+    const terms    = document.getElementById('termsCheck').checked;
+    const errEl    = document.getElementById('regError');
+    const sucEl    = document.getElementById('regSuccess');
+
+    errEl.classList.remove('show'); sucEl.classList.remove('show');
+
+    if (!name || !email  || !pw || !cf) {
+      errEl.textContent = '✗ Please fill in all required fields.';
+      errEl.classList.add('show'); return;
+    }
+    if (!email.includes('@@')) {
+      errEl.textContent = '✗ Please enter a valid email address.';
+      errEl.classList.add('show'); return;
+    }
+
+    if (pw.length < 8) {
+      errEl.textContent = '✗ Password must be at least 8 characters.';
+      errEl.classList.add('show'); return;
+    }
+    if (pw !== cf) {
+      errEl.textContent = '✗ Passwords do not match.';
+      errEl.classList.add('show'); return;
+    }
+    if (!terms) {
+      errEl.textContent = '✗ Please accept the Terms of Service to continue.';
+      errEl.classList.add('show'); return;
+    }
+
+    const btn = document.getElementById('regBtn');
+    btn.textContent = 'Creating account...'; btn.disabled = true;
+
+    // Simulate registration — store user in sessionStorage
+    setTimeout(() => {
+      const registration = { Name :name, Email: email,Password: pw };
+      $.ajax({
+          url: "/Home/Register",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(registration),
+          success: function(response) {
+              sessionStorage.setItem('ft_user', JSON.stringify(registration));
+              sucEl.textContent = `✓ Account created! Welcome, ${name}. Redirecting to dashboard...`;
+              sucEl.classList.add('show');
+              setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+          },
+          error: function(error) {
+              errEl.textContent = '✗ An error occurred during registration.';
+              errEl.classList.add('show');
+              btn.textContent = 'Register'; btn.disabled = false;
+          }
+      });
+    }, 900);
+  }
+</script>
+</body>
+</html>

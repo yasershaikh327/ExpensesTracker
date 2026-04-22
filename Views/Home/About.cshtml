@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinTrack — About Us</title>
+  <link rel="stylesheet" href="~/css/public.css" />
+  <style>
+    .about-hero { padding: 72px 0 56px; border-bottom: 1px solid var(--border); margin-bottom: 60px; }
+    .team-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 40px; }
+    .team-card { text-align: center; }
+    .team-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800;
+      margin: 0 auto 14px;
+      border: 2px solid var(--border-hi);
+    }
+    .team-name  { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .team-role  { font-size: 11px; font-family: var(--font-mono); color: var(--text-secondary); }
+
+    .value-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 40px; }
+    .value-card { display: flex; gap: 16px; align-items: flex-start; }
+    .value-icon {
+      width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .value-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+    .value-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+    .timeline { display: flex; flex-direction: column; gap: 0; margin-top: 36px; }
+    .tl-item { display: grid; grid-template-columns: 80px 1fr; gap: 20px; padding-bottom: 30px; position: relative; }
+    .tl-item:not(:last-child)::after {
+      content:''; position:absolute; left:39px; top:32px; bottom:0; width:1px; background:var(--border);
+    }
+    .tl-year {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+      color: var(--purple); padding-top: 6px; text-align: right;
+    }
+    .tl-dot {
+      position: absolute; left: 34px; top: 8px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--purple); border: 2px solid var(--bg-deep);
+    }
+    .tl-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .tl-desc  { font-size: 13px; color: var(--text-secondary); }
+
+   
+  </style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-mark">₹</div>
+    <div class="nav-logo-text">FinTrack</div>
+  </a>
+  <div class="nav-links">
+    <a asp-action="Index" asp-controller="Home" class="nav-link active">Home</a>
+    <a asp-action="About" asp-controller="Home" class="nav-link">About</a>
+    <a asp-action="Contact" asp-controller="Home" class="nav-link">Contact</a>
+    <a asp-action="Login" asp-controller="Home" class="nav-link">Login</a>
+    <a asp-action="Registration" asp-controller="Home" class="nav-link cta">Get Started</a>
+  </div>
+  <button class="nav-toggle" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+    <a asp-action="Index" asp-controller="Home" class="nav-link active">Home</a>
+    <a asp-action="About" asp-controller="Home" class="nav-link">About</a>
+    <a asp-action="Contact" asp-controller="Home" class="nav-link">Contact</a>
+    <a asp-action="Login" asp-controller="Home" class="nav-link">Login</a>
+    <a asp-action="Registration" asp-controller="Home" class="nav-link cta">Get Started</a>
+</div>
+
+<div class="page-md">
+  <!-- Hero -->
+  <div class="about-hero">
+    <div class="section-eyebrow">About FinTrack</div>
+    <h1 class="section-title">We built the tracker<br/>we wished existed.</h1>
+    <p class="section-sub">
+      FinTrack started as a weekend project born out of frustration with bloated, cloud-dependent finance apps that demanded subscriptions just to see a bar chart. We wanted something fast, dark, and honest — so we built it.
+    </p>
+  </div>
+
+  <!-- Mission -->
+  <div class="section-eyebrow">Our Mission</div>
+  <h2 class="section-title" style="font-size:clamp(22px,4vw,36px);margin-bottom:16px;">
+    Financial clarity for <span class="highlight">everyone.</span>
+  </h2>
+  <p style="color:var(--text-secondary);font-size:15px;line-height:1.8;max-width:600px;margin-bottom:20px;">
+    Most people don't have a spending problem — they have a <em style="color:var(--text-primary);">visibility problem.</em> They don't know what they're spending until it's too late. FinTrack fixes that by making every transaction visible the moment it happens, with charts that don't require a finance degree to read.
+  </p>
+  <p style="color:var(--text-secondary);font-size:15px;line-height:1.8;max-width:600px;">
+    We believe personal finance tools should be private by default, beautiful by design, and free to start. No dark patterns. No upselling. No guilt-tripping push notifications. Just your numbers, clearly presented, whenever you need them.
+  </p>
+
+  <div class="divider"></div>
+
+  <!-- Values -->
+  <div class="section-eyebrow">Our Values</div>
+  <h2 class="section-title" style="font-size:clamp(22px,4vw,34px);margin-bottom:8px;">What we stand for</h2>
+  <div class="value-grid">
+    <div class="card value-card">
+      <div class="value-icon" style="background:rgba(139,124,248,0.15);">🔒</div>
+      <div>
+        <div class="value-title">Privacy first</div>
+        <div class="value-desc">Your financial data never leaves your device without explicit consent. No tracking, no profiling, no selling your habits to advertisers.</div>
+      </div>
+    </div>
+    <div class="card value-card">
+      <div class="value-icon" style="background:rgba(52,217,165,0.15);">⚡</div>
+      <div>
+        <div class="value-title">Speed over bloat</div>
+        <div class="value-desc">Every interaction should be instant. We cut every feature that slowed things down, and kept only what genuinely helps you.</div>
+      </div>
+    </div>
+    <div class="card value-card">
+      <div class="value-icon" style="background:rgba(245,185,66,0.15);">🎯</div>
+      <div>
+        <div class="value-title">Honest design</div>
+        <div class="value-desc">No dark patterns. No fake urgency. No growth-hacked UX tricks. Just clean, clear interfaces that respect your intelligence.</div>
+      </div>
+    </div>
+    <div class="card value-card">
+      <div class="value-icon" style="background:rgba(240,112,96,0.15);">🌱</div>
+      <div>
+        <div class="value-title">Built to last</div>
+        <div class="value-desc">We write maintainable, well-documented code. FinTrack will work the same way in 5 years as it does today — no planned obsolescence.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Timeline -->
+  <div class="section-eyebrow">Story</div>
+  <h2 class="section-title" style="font-size:clamp(22px,4vw,34px);margin-bottom:8px;">How we got here</h2>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-year">2023</div>
+      <div>
+        <div class="tl-dot"></div>
+        <div class="tl-title">The idea</div>
+        <div class="tl-desc">Arjun, tired of juggling three different apps and a spreadsheet, sketched the first wireframe on a flight from Goa to Mumbai.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2024</div>
+      <div>
+        <div class="tl-dot"></div>
+        <div class="tl-title">First version</div>
+        <div class="tl-desc">A single-page HTML app with no backend, no build tools — just clean vanilla code. Shared with 50 friends, who asked for more.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2025</div>
+      <div>
+        <div class="tl-dot"></div>
+        <div class="tl-title">Dark Pro redesign</div>
+        <div class="tl-desc">Complete visual overhaul. Budget tracking, multi-page navigation, mobile responsiveness, and the charts users had been asking for.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2026</div>
+      <div>
+        <div class="tl-dot"></div>
+        <div class="tl-title">Public launch</div>
+        <div class="tl-desc">FinTrack v2.1 is now open to everyone. Free to use, no account required to explore — just open and start tracking.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Team -->
+  <div class="section-eyebrow">Team</div>
+  <h2 class="section-title" style="font-size:clamp(22px,4vw,34px);margin-bottom:8px;">The people behind it</h2>
+  <div class="team-grid">
+    <div class="card team-card">
+      <div class="team-avatar" style="background:rgba(139,124,248,0.18);color:var(--purple);">AK</div>
+      <div class="team-name">Arjun K.</div>
+      <div class="team-role">Founder · Design &amp; Frontend</div>
+    </div>
+    <div class="card team-card">
+      <div class="team-avatar" style="background:rgba(52,217,165,0.18);color:var(--teal);">PR</div>
+      <div class="team-name">Priya R.</div>
+      <div class="team-role">Co-founder · Product &amp; UX</div>
+    </div>
+    <div class="card team-card">
+      <div class="team-avatar" style="background:rgba(245,185,66,0.18);color:var(--amber);">SM</div>
+      <div class="team-name">Suresh M.</div>
+      <div class="team-role">Engineer · Backend &amp; Data</div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="text-align:center;margin-top:64px;padding:48px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);">
+    <p style="font-size:13px;font-family:var(--font-mono);color:var(--purple);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;">Join us</p>
+    <h2 style="font-size:28px;font-weight:800;letter-spacing:-0.02em;margin-bottom:12px;">Ready to track smarter?</h2>
+    <p style="color:var(--text-secondary);margin-bottom:28px;">Create your account in 30 seconds. No credit card needed.</p>
+    <a href="register.html" class="btn btn-primary">Create free account →</a>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-copy">© 2026 FinTrack · dark pro v2.1</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="login.html">Login</a>
+  </div>
+</footer>
+
+<script>function toggleMobileMenu(){document.getElementById('mobileMenu').classList.toggle('open');}</script>
+</body>
+</html>

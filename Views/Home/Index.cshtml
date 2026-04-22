@@ -1,259 +1,263 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FinTrack — Dashboard</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinTrack — Take Control of Your Money</title>
+  <link rel="stylesheet" href="public.css"/>
   <link rel="stylesheet" href="shared.css" />
-  <link rel="stylesheet" href="~/css/site.css" />
+  <link rel="stylesheet" href="~/css/public.css" />
   <script src="~/js/site.js"></script>
   <style>
-    .mid-grid {
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 14px;
-      margin-bottom: 24px;
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 90px 20px 80px;
+      position: relative;
     }
-    .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-    .donut-svg-wrap { position: relative; width: 140px; height: 140px; }
-    .donut-center {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+    .hero-glow {
+      position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 400px;
+      background: radial-gradient(ellipse at center, rgba(139,124,248,0.12) 0%, transparent 70%);
+      pointer-events: none;
     }
-    .donut-center-val { font-family: var(--font-mono); font-size: 16px; font-weight: 500; }
-    .donut-center-lbl { font-size: 9px; color: var(--text-secondary); margin-top: 2px; }
-    .donut-legend { width: 100%; display: flex; flex-direction: column; gap: 8px; }
-    .legend-row   { display: flex; align-items: center; gap: 8px; }
-    .legend-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-    .legend-name  { font-size: 11px; color: var(--text-secondary); flex: 1; }
-    .legend-pct   { font-family: var(--font-mono); font-size: 11px; }
-    .chart-wrap   { position: relative; height: 160px; }
-    canvas        { width: 100%; height: 100%; display: block; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--purple-glow); border: 1px solid var(--purple-dim);
+      color: var(--purple); border-radius: 20px;
+      padding: 5px 14px; font-size: 11px; font-family: var(--font-mono);
+      letter-spacing: 0.05em; margin-bottom: 28px;
+    }
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); display: inline-block; }
+    .hero-title {
+      font-size: clamp(36px, 7vw, 72px); font-weight: 800;
+      letter-spacing: -0.04em; line-height: 1.0; margin-bottom: 22px;
+    }
+    .hero-title .line2 { color: var(--purple); }
+    .hero-desc {
+      font-size: 17px; color: var(--text-secondary); max-width: 500px;
+      margin: 0 auto 36px; line-height: 1.7;
+    }
+    .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero-stats {
+      display: flex; justify-content: center; gap: 48px;
+      margin-top: 64px; flex-wrap: wrap;
+    }
+    .hero-stat-val { font-family: var(--font-mono); font-size: 28px; font-weight: 500; }
+    .hero-stat-val.purple { color: var(--purple); }
+    .hero-stat-val.teal   { color: var(--teal); }
+    .hero-stat-val.amber  { color: var(--amber); }
+    .hero-stat-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* ── Feature cards ── */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-top: 48px;
+    }
+    .feature-card { text-decoration: none; }
+    .feat-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 16px;
+    }
+    .feat-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .feat-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ── How it works ── */
+    .steps { display: flex; flex-direction: column; gap: 0; margin-top: 40px; }
+    .step {
+      display: grid; grid-template-columns: 56px 1fr;
+      gap: 20px; padding-bottom: 36px; position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: ''; position: absolute;
+      left: 27px; top: 52px; bottom: 0; width: 1px;
+      background: var(--border);
+    }
+    .step-num {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--bg-raised); border: 1px solid var(--border-hi);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 16px; font-weight: 500;
+      color: var(--purple); flex-shrink: 0;
+    }
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; margin-top: 14px; }
+    .step-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+    /* ── CTA strip ── */
+    .cta-strip {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); padding: 56px 48px;
+      text-align: center; position: relative; overflow: hidden;
+      margin-top: 80px;
+    }
+    .cta-strip::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--purple) 40%, var(--teal) 60%, transparent);
+    }
+    .cta-glow {
+      position: absolute; bottom: -60px; left: 50%; transform: translateX(-50%);
+      width: 500px; height: 300px;
+      background: radial-gradient(ellipse, rgba(52,217,165,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
     
   </style>
 </head>
 <body>
-<div class="shell">
-  <div id="sidebar-mount"></div>
-  <main class="main">
-    <div class="topbar">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <button class="menu-toggle" onclick="openDrawer()" aria-label="Open menu">
-          <span></span><span></span><span></span>
-        </button>
-        <div>
-          <div class="page-title">Dashboard</div>
-          <div class="month-badge" id="monthBadge"></div>
-        </div>
-      </div>
-      <button class="add-btn" onclick="openModal()">+ Add</button>
-    </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total Spent</div>
-        <div class="stat-value purple" id="statSpent">₹0</div>
-        <div class="stat-change" id="statSpentChg"></div>
-      </div>
-      <div class="stat-card c-teal">
-        <div class="stat-label">Total Income</div>
-        <div class="stat-value teal" id="statIncome">₹0</div>
-        <div class="stat-change" id="statIncomeChg"></div>
-      </div>
-      <div class="stat-card c-coral">
-        <div class="stat-label">Net Savings</div>
-        <div class="stat-value coral" id="statSavings">₹0</div>
-        <div class="stat-change" id="statSavingsChg"></div>
-      </div>
-    </div>
-
-    <div class="mid-grid">
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">Spending Trend</div>
-          <div class="panel-sub">Last 7 days</div>
-        </div>
-        <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
-      </div>
-      <div class="panel">
-        <div class="panel-header"><div class="panel-title">By Category</div></div>
-        <div class="donut-wrap">
-          <div class="donut-svg-wrap">
-            <svg id="donutSvg" width="140" height="140" viewBox="0 0 140 140"></svg>
-            <div class="donut-center">
-              <div class="donut-center-val" id="donutCenterVal">₹0</div>
-              <div class="donut-center-lbl">spent</div>
-            </div>
-          </div>
-          <div class="donut-legend" id="donutLegend"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="tx-header-row">
-        <div class="panel-title">Recent Transactions</div>
-        <div class="filter-tabs">
-          <button class="ftab active" onclick="filterTx('all',this)">All</button>
-          <button class="ftab" onclick="filterTx('expense',this)">Expenses</button>
-          <button class="ftab" onclick="filterTx('income',this)">Income</button>
-        </div>
-      </div>
-      <div class="tx-list tx-scroll" id="txList" style="max-height:360px;"></div>
-    </div>
-  </main>
-
-  <div id="mobile-nav-mount"></div>
-  <div id="modal-mount"></div>
+<!-- ── Nav ── -->
+<nav class="topnav">
+  <a href="index.html" class="nav-logo">
+    <div class="nav-logo-mark">₹</div>
+    <div class="nav-logo-text">FinTrack</div>
+  </a>
+  <div class="nav-links">
+    <a asp-action="Index" asp-controller="Home" class="nav-link active">Home</a>
+    <a asp-action="About" asp-controller="Home" class="nav-link">About</a>
+    <a asp-action="Contact" asp-controller="Home" class="nav-link">Contact</a>
+    <a asp-action="Login" asp-controller="Home" class="nav-link">Login</a>
+    <a asp-action="Registration" asp-controller="Home" class="nav-link cta">Get Started</a>
+  </div>
+  <button class="nav-toggle" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+    <a asp-action="Index" asp-controller="Home" class="nav-link active">Home</a>
+    <a asp-action="About" asp-controller="Home" class="nav-link">About</a>
+    <a asp-action="Contact" asp-controller="Home" class="nav-link">Contact</a>
+    <a asp-action="Login" asp-controller="Home" class="nav-link">Login</a>
+    <a asp-action="Registration" asp-controller="Home" class="nav-link cta">Get Started</a>
 </div>
 
-<script src="shared.js"></script>
+<!-- ── Hero ── -->
+<div class="page" style="padding-top:0;padding-bottom:0;">
+  <div class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-badge"><span></span> Personal Finance Tracker</div>
+    <h1 class="hero-title">
+      Know where your<br/>
+      <span class="line2">money goes.</span>
+    </h1>
+    <p class="hero-desc">
+      FinTrack gives you a real-time view of every rupee — what you spend, what you earn, and what you save. No spreadsheets, no guesswork.
+    </p>
+    <div class="hero-cta">
+      <a href="register.html" class="btn btn-primary btn-lg">Start tracking free →</a>
+      <a href="about.html"    class="btn btn-ghost btn-lg">Learn more</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-val purple">₹0 hidden</div>
+        <div class="hero-stat-lbl">Full transparency</div>
+      </div>
+      <div>
+        <div class="hero-stat-val teal">4 views</div>
+        <div class="hero-stat-lbl">Dashboard, TX, Budget, Reports</div>
+      </div>
+      <div>
+        <div class="hero-stat-val amber">100% local</div>
+        <div class="hero-stat-lbl">Your data stays yours</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Features ── -->
+<div class="page" style="padding-top:16px;">
+  <div class="section-eyebrow">Features</div>
+  <h2 class="section-title">Everything you need,<br/>nothing you don't.</h2>
+  <p class="section-sub">Built for daily use — fast to enter, clear to read, and satisfying to track.</p>
+
+  <div class="features-grid">
+    <div class="card card-accent" style="--accent:var(--purple);">
+      <div class="feat-icon" style="background:rgba(139,124,248,0.15);">📊</div>
+      <div class="feat-title">Live Dashboard</div>
+      <div class="feat-desc">See your total spent, income, and savings at a glance — with a 7-day trend chart and category donut updated in real time.</div>
+    </div>
+    <div class="card card-accent teal">
+      <div class="feat-icon" style="background:rgba(52,217,165,0.15);">📋</div>
+      <div class="feat-title">Transaction Log</div>
+      <div class="feat-desc">Log expenses and income in seconds. Filter by type or category, search by keyword, and delete anything with one tap.</div>
+    </div>
+    <div class="card card-accent amber">
+      <div class="feat-icon" style="background:rgba(245,185,66,0.15);">🎯</div>
+      <div class="feat-title">Budget Tracking</div>
+      <div class="feat-desc">Set monthly limits per category. Color-coded progress bars warn you before you overspend — and you can edit limits any time.</div>
+    </div>
+    <div class="card card-accent coral">
+      <div class="feat-icon" style="background:rgba(240,112,96,0.15);">📈</div>
+      <div class="feat-title">Monthly Reports</div>
+      <div class="feat-desc">Category bar charts, top-5 biggest transactions, 14-day area chart, and a full percentage breakdown — all auto-generated.</div>
+    </div>
+    <div class="card card-accent" style="--accent:var(--teal);">
+      <div class="feat-icon" style="background:rgba(96,184,240,0.15);">📱</div>
+      <div class="feat-title">Mobile Friendly</div>
+      <div class="feat-desc">Bottom tab bar on mobile, slide-in drawer, and a sheet-style add modal. Works perfectly on any screen size.</div>
+    </div>
+    <div class="card card-accent" style="--accent:var(--amber);">
+      <div class="feat-icon" style="background:rgba(224,111,255,0.15);">🔒</div>
+      <div class="feat-title">Private by Default</div>
+      <div class="feat-desc">All your data lives in your browser session. Nothing is uploaded, synced, or stored on any server without your knowledge.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- How it works -->
+  <div class="section-eyebrow">How it works</div>
+  <h2 class="section-title">Up and running<br/>in 3 steps.</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div>
+        <div class="step-title">Create your account</div>
+        <div class="step-desc">Register with your name, email, and a secure password. No credit card, no subscription — free to start.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div>
+        <div class="step-title">Log your first transaction</div>
+        <div class="step-desc">Hit "+ Add" from any page. Enter a description, amount, category, and date. Takes under 10 seconds.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div>
+        <div class="step-title">Watch your finances come alive</div>
+        <div class="step-desc">Your dashboard, charts, and budget bars update instantly. Check your Reports page at the end of the month for the full picture.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA strip -->
+  <div class="cta-strip">
+    <div class="cta-glow"></div>
+    <div class="section-eyebrow" style="text-align:center;margin-bottom:16px;">Ready?</div>
+    <h2 class="section-title" style="font-size:clamp(24px,4vw,40px);margin-bottom:14px;">Start tracking today.</h2>
+    <p style="color:var(--text-secondary);margin-bottom:32px;font-size:15px;">It takes 30 seconds to register. Your first transaction takes 10.</p>
+    <a href="register.html" class="btn btn-primary btn-lg">Create free account →</a>
+  </div>
+</div>
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <div class="footer-copy">© 2026 FinTrack · dark pro v2.1</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="login.html">Login</a>
+  </div>
+</footer>
+
 <script>
-  document.getElementById('sidebar-mount').innerHTML    = renderSidebar('dashboard');
-  document.getElementById('mobile-nav-mount').innerHTML = renderMobileNav('dashboard');
-  document.getElementById('modal-mount').innerHTML      = renderModal();
-
-  const now = new Date();
-  document.getElementById('monthBadge').textContent =
-    now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }).toUpperCase();
-
-  let entries = loadEntries();
-  let txFilter = 'all';
-
-  const getExpenses = () => entries.filter(e => e.type === 'expense');
-  const getIncome   = () => entries.filter(e => e.type === 'income');
-  const totalAmt    = arr => arr.reduce((s, e) => s + e.amt, 0);
-
-  function updateStats() {
-    const spent = totalAmt(getExpenses()), income = totalAmt(getIncome());
-    const savings = income - spent;
-    document.getElementById('statSpent').textContent   = fmt_inr(spent);
-    document.getElementById('statIncome').textContent  = fmt_inr(income);
-    document.getElementById('statSavings').textContent = fmt_inr(Math.abs(savings));
-    document.getElementById('statSpentChg').innerHTML  = `<span class="down">${getExpenses().length} transactions</span>`;
-    document.getElementById('statIncomeChg').innerHTML = `<span class="up">${getIncome().length} credits</span>`;
-    document.getElementById('statSavingsChg').innerHTML = savings >= 0
-      ? `<span class="up">▲ net positive</span>`
-      : `<span class="down">▼ net negative</span>`;
-  }
-
-  function filterTx(f, btn) {
-    txFilter = f;
-    btn.closest('.filter-tabs').querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderTxList();
-  }
-
-  function renderTxList() {
-    const el = document.getElementById('txList');
-    let data = [...entries].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 20);
-    if (txFilter === 'expense') data = data.filter(e => e.type === 'expense');
-    if (txFilter === 'income')  data = data.filter(e => e.type === 'income');
-    if (!data.length) { el.innerHTML = '<div class="empty-state">no entries yet</div>'; return; }
-    el.innerHTML = data.map(e => {
-      const m = CAT_META[e.cat] || CAT_META.Other;
-      const sign = e.type === 'income' ? '+' : '-';
-      const cls  = e.type === 'income' ? 'pos' : 'neg';
-      const dStr = new Date(e.date+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
-      return `<div class="tx-item">
-        <div class="tx-icon" style="background:${m.color}22;">${m.icon}</div>
-        <div style="flex:1;min-width:0;">
-          <div class="tx-name">${e.desc}</div>
-          <div class="tx-cat">${e.cat}</div>
-        </div>
-        <div class="tx-date">${dStr}</div>
-        <div class="tx-amount ${cls}">${sign}${fmt_inr(e.amt)}</div>
-      </div>`;
-    }).join('');
-  }
-
-  function drawLineChart() {
-    const canvas = document.getElementById('lineChart');
-    if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.offsetWidth, H = canvas.offsetHeight;
-    canvas.width = W*dpr; canvas.height = H*dpr;
-    const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate()-i);
-      const key = fmt(d);
-      const sum = getExpenses().filter(e=>e.date===key).reduce((s,e)=>s+e.amt,0);
-      days.push({ label: d.toLocaleDateString('en-IN',{weekday:'short'}), val: sum });
-    }
-    const maxV = Math.max(...days.map(d=>d.val), 1000);
-    const pad = {t:10,r:10,b:28,l:50};
-    const cW = W-pad.l-pad.r, cH = H-pad.t-pad.b;
-    ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='#2a2a27'; ctx.lineWidth=0.5;
-    [0,.25,.5,.75,1].forEach(f=>{
-      const y=pad.t+cH*(1-f);
-      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
-      ctx.fillStyle='#444440'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='right';
-      ctx.fillText('₹'+(maxV*f/1000).toFixed(0)+'k',pad.l-6,y+4);
-    });
-    ctx.fillStyle='#444440'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
-    days.forEach((d,i)=>ctx.fillText(d.label, pad.l+i/(days.length-1)*cW, H-4));
-    const pts = days.map((d,i)=>({x:pad.l+i/(days.length-1)*cW, y:pad.t+cH*(1-d.val/maxV)}));
-    const grad = ctx.createLinearGradient(0,pad.t,0,pad.t+cH);
-    grad.addColorStop(0,'rgba(139,124,248,0.3)'); grad.addColorStop(1,'rgba(139,124,248,0)');
-    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-    pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
-    ctx.lineTo(pts[pts.length-1].x,pad.t+cH); ctx.lineTo(pts[0].x,pad.t+cH);
-    ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-    pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
-    ctx.strokeStyle='#8b7cf8'; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.stroke();
-    pts.forEach(p=>{
-      ctx.beginPath(); ctx.arc(p.x,p.y,3.5,0,Math.PI*2);
-      ctx.fillStyle='#8b7cf8'; ctx.fill();
-      ctx.strokeStyle='#0d0d0b'; ctx.lineWidth=1.5; ctx.stroke();
-    });
-  }
-
-  function drawDonut() {
-    const svg=document.getElementById('donutSvg'), legend=document.getElementById('donutLegend');
-    const cats={};
-    getExpenses().forEach(e=>{cats[e.cat]=(cats[e.cat]||0)+e.amt;});
-    const total=Object.values(cats).reduce((s,v)=>s+v,0);
-    document.getElementById('donutCenterVal').textContent = total>0 ? fmt_inr(total) : '₹0';
-    if (!total){svg.innerHTML='';legend.innerHTML='';return;}
-    const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-    const cx=70,cy=70,R=54,r=36,tau=Math.PI*2; let angle=-Math.PI/2, paths='';
-    sorted.forEach(([cat,val])=>{
-      const frac=val/total, sweep=frac*tau;
-      const x1=cx+R*Math.cos(angle),y1=cy+R*Math.sin(angle);
-      const x2=cx+R*Math.cos(angle+sweep),y2=cy+R*Math.sin(angle+sweep);
-      const xi1=cx+r*Math.cos(angle+sweep),yi1=cy+r*Math.sin(angle+sweep);
-      const xi2=cx+r*Math.cos(angle),yi2=cy+r*Math.sin(angle);
-      const color=(CAT_META[cat]||CAT_META.Other).color;
-      paths+=`<path d="M${x1} ${y1} A${R} ${R} 0 ${sweep>Math.PI?1:0} 1 ${x2} ${y2} L${xi1} ${yi1} A${r} ${r} 0 ${sweep>Math.PI?1:0} 0 ${xi2} ${yi2} Z" fill="${color}" opacity="0.9"/>`;
-      angle+=sweep;
-    });
-    svg.innerHTML=paths;
-    legend.innerHTML=sorted.slice(0,5).map(([cat,val])=>{
-      const pct=Math.round(val/total*100), color=(CAT_META[cat]||CAT_META.Other).color;
-      return `<div class="legend-row"><div class="legend-dot" style="background:${color}"></div><div class="legend-name">${cat}</div><div class="legend-pct" style="color:${color}">${pct}%</div></div>`;
-    }).join('');
-  }
-
-  function saveEntry() {
-    const desc=document.getElementById('fDesc').value.trim();
-    const amt=parseFloat(document.getElementById('fAmt').value);
-    const cat=document.getElementById('fCat').value;
-    const date=document.getElementById('fDate').value;
-    if (!desc||!amt||amt<=0||!date){alert('Please fill all fields.');return;}
-    entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
-    saveEntries(entries);
-    document.getElementById('fDesc').value='';
-    document.getElementById('fAmt').value='';
-    closeModal(); renderAll();
-  }
-
-  function renderAll(){updateStats();renderTxList();drawLineChart();drawDonut();}
-  window.addEventListener('load', renderAll);
-  window.addEventListener('resize', ()=>drawLineChart());
+function toggleMobileMenu() {
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
 </script>
 </body>
 </html>
