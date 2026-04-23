@@ -12,11 +12,23 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ExpensesTracker.csproj", "."]
-RUN dotnet restore "./ExpensesTracker.csproj"
+
+# ✅ Copy solution file (if exists)
+COPY *.sln .
+
+# ✅ Copy ALL project files
+COPY ExpensesTracker/*.csproj ./ExpensesTracker/
+COPY DataAccess/*.csproj ./DataAccess/
+
+# ✅ Restore dependencies
+RUN dotnet restore
+
+# ✅ Copy full source
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "./ExpensesTracker.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# ✅ Build
+WORKDIR /src/ExpensesTracker
+RUN dotnet build -c $BUILD_CONFIGURATION -o /app/build
 
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
