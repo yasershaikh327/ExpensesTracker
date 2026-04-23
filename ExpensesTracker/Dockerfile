@@ -17,7 +17,7 @@ WORKDIR /src
 COPY *.sln .
 
 # ✅ Copy ALL project files
-COPY ExpensesTracker/*.csproj ./ExpensesTracker/
+COPY ExpensesTracker/*.csproj
 COPY DataAccess/*.csproj ./DataAccess/
 
 # ✅ Restore dependencies
