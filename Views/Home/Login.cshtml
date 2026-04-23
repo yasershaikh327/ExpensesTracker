@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FinTrack — Login</title>
   <link rel="stylesheet" href="~/css/public.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
     body { display: flex; flex-direction: column; min-height: 100vh; }
     .auth-wrapper {
@@ -183,11 +184,28 @@
     const btn = document.getElementById('loginBtn');
     btn.textContent = 'Signing in...'; btn.disabled = true;
 
-    setTimeout(() => {
-      sucEl.textContent = '✓ Login successful! Redirecting to dashboard...';
-      sucEl.classList.add('show');
-      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
-    }, 800);
+  
+  setTimeout(() => {
+      const login = {  Email: email,Password: pw };
+      $.ajax({
+          url: "/Home/Login",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(login),
+          success: function(response) {
+              sessionStorage.setItem('ft_user', JSON.stringify(login));
+              sucEl.textContent = response.message;
+              sucEl.classList.add('show');
+              document.cookie = "jwtToken=" + response.token + "; path=/; max-age=86400; SameSite=Lax";
+              setTimeout(() => { window.location.href = '/Member/Index'; }, 3500);
+          },
+          error: function(error) {
+              errEl.textContent = '✗ An error occurred during login.';
+              errEl.classList.add('show');
+              btn.textContent = 'Login'; btn.disabled = false;
+          }
+      });
+    }, 900);
   }
 </script>
 </body>

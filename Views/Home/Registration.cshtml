@@ -301,9 +301,9 @@
           data: JSON.stringify(registration),
           success: function(response) {
               sessionStorage.setItem('ft_user', JSON.stringify(registration));
-              sucEl.textContent = `✓ Account created! Welcome, ${name}. Redirecting to dashboard...`;
+              sucEl.textContent = response.message;
               sucEl.classList.add('show');
-              setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+              setTimeout(() => { window.location.href = '/Home/Login'; }, 1500);
           },
           error: function(error) {
               errEl.textContent = '✗ An error occurred during registration.';

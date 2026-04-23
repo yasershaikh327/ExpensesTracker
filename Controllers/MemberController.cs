@@ -1,9 +1,11 @@
 using ExpensesTracker.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace ExpensesTracker.Controllers
 {
+    [Authorize]
     public class MemberController : Controller
     {
         private readonly IConfiguration _configuration;
