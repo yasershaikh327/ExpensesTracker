@@ -11,5 +11,6 @@ namespace DataAccess.Models
         public string? Email { get; set; }
         public string? Password { get; set; }
         public DateTime DateOfRegistration { get; set; } = DateTime.UtcNow;     
+        public DateTime LastLogin { get; set; }     
     }
 }

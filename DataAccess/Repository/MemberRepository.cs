@@ -43,6 +43,14 @@ namespace DataAccess.Repository
             var existingUser = _postgreContext.registrations.FirstOrDefault(r => r.Email == mapper.Email);
             if (existingUser != null && _helper.VerifyPassword(mapper.Password, existingUser.Password))
             {
+                var LoginLogs = new LoginLogs()
+                {
+                    UserId = existingUser.Id,
+                    LoginTime = DateTime.UtcNow
+                };
+                existingUser.LastLogin = DateTime.UtcNow;  
+                _postgreContext.loginLogs.Add(LoginLogs);
+                _postgreContext.SaveChanges();
                 return GenerateToken(existingUser!.Email);
             }
             return "User Not Found";
