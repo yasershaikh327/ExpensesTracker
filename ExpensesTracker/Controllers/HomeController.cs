@@ -60,5 +60,11 @@ namespace ExpensesTracker.Controllers
             }
             return Json(new { success = false, message = "Please fill out all required fields correctly." });
         }
+
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("jwtToken");
+            return RedirectToAction("Login","Home");
+        }
     }
 }

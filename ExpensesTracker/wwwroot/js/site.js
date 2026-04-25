@@ -68,6 +68,10 @@ const NAV_PAGES = [
         id: 'reports', label: 'Reports', href: '/Home/Reports',
         icon: `<path d="M2 14V9l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`,
     },
+    {
+        id: 'logout', label: 'Logout', href: '/Home/Logout',
+        icon: `<path d="M2 14V9l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`,
+    },
 ];
 
 /* ── Desktop sidebar HTML ── */
