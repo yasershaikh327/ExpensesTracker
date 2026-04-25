@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FinTrack — Contact Us</title>
   <link rel="stylesheet" href="~/css/public.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
     .contact-grid { display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start; margin-top: 48px; }
     .contact-info { display: flex; flex-direction: column; gap: 20px; }
@@ -33,7 +34,7 @@
 <body>
 
 <nav class="topnav">
-  <a href="index.html" class="nav-logo">
+  <a href="Index" class="nav-logo">
     <div class="nav-logo-mark">₹</div>
     <div class="nav-logo-text">FinTrack</div>
   </a>
@@ -154,10 +155,10 @@
 <footer class="site-footer">
   <div class="footer-copy">© 2026 FinTrack · dark pro v2.1</div>
   <div class="footer-links">
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="contact.html">Contact</a>
-    <a href="login.html">Login</a>
+    <a href="Index">Home</a>
+    <a href="About">About</a>
+    <a href="Contact">Contact</a>
+    <a href="Login">Login</a>
   </div>
 </footer>
 
@@ -190,8 +191,32 @@
       return;
     }
 
+     const contact = { Name :name, Email: email,Subject: subject,Rating: rating, Message: message };
+      $.ajax({
+          url: "/Home/Contact",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(contact),
+          success: function(response) {
+              sessionStorage.setItem('ft_user', JSON.stringify(contact));
+              if(response.success){
+                  document.querySelector('#successAlert').classList.add('show');
+                   setTimeout(() => { window.location.href = '/Home/Index'; }, 1500);
+              }else{
+                  document.getElementById('errorAlert').classList.add('show');
+                  document.getElementById('errorAlert').textContent = response.message;
+              }
+             
+          },
+          error: function(error) {
+              errEl.textContent = '✗ An error occurred during contacting.';
+              errEl.classList.add('show');
+              btn.textContent = 'Send Message'; btn.disabled = false;
+          }
+      });
+
     // Simulate submission
-    document.querySelector('#successAlert').classList.add('show');
+    
     document.getElementById('cName').value    = '';
     document.getElementById('cEmail').value   = '';
     document.getElementById('cSubject').value = '';

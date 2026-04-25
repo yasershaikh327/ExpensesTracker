@@ -20,7 +20,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IRegistrationMapper, RegistrationMapper>();  
 builder.Services.AddScoped<ILoginMapper, LoginMapper>();  
+builder.Services.AddScoped<IContactMapper, ContactMapper>();  
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();  
+builder.Services.AddScoped<IHomeRepository, HomeRepository>();  
 builder.Services.AddScoped<IHelper, Helper>();  
 builder.Services.AddDbContext<DbPostgreContext>(options =>
     options.UseNpgsql(Environment.GetEnvironmentVariable("DatabaseConnection"))

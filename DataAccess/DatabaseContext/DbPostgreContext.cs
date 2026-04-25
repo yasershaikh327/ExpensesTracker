@@ -10,6 +10,7 @@ public class DbPostgreContext : DbContext
 
     public DbSet<Registration> registrations { get; set; }
     public DbSet<LoginLogs> loginLogs { get; set; }
+    public DbSet<Contact> contact { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

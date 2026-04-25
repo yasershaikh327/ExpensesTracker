@@ -10,10 +10,12 @@ namespace ExpensesTracker.Controllers
     public class HomeController : Controller
     {
         private readonly IMemberRepository _memberRepository;
+        private readonly IHomeRepository _homeRepository;
 
-        public HomeController(IMemberRepository memberRepository)
+        public HomeController(IMemberRepository memberRepository, IHomeRepository homeRepository)
         {
             _memberRepository = memberRepository;
+            _homeRepository = homeRepository;
         }
 
         public IActionResult Index()
@@ -29,6 +31,18 @@ namespace ExpensesTracker.Controllers
         {
             return View();
         }
+
+        [HttpPost]
+        public JsonResult Contact([FromBody]ContactDTO contact)
+        {
+            if (ModelState.IsValid)
+            {
+                var data = _homeRepository.Contact(contact);
+                return Json(new { success = true, message = data });
+            }
+            return Json(new { success = false, message = "Please fill out all required fields correctly. Ensure Data is Entered in proper Format" });
+        }
+
         public IActionResult Login()
         {
             return View();
