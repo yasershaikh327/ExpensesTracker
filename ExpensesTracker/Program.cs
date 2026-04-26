@@ -20,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IRegistrationMapper, RegistrationMapper>();  
 builder.Services.AddScoped<ILoginMapper, LoginMapper>();  
+builder.Services.AddScoped<IExpenseMapper, ExpenseMapper>();  
 builder.Services.AddScoped<IContactMapper, ContactMapper>();  
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();  
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();  

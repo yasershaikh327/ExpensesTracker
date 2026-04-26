@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="shared.css" />
   <link rel="stylesheet" href="~/css/site.css" />
   <script src="~/js/site.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     .mid-grid {
       display: grid;
@@ -239,6 +241,8 @@
   }
 
   function saveEntry() {
+    const btn = document.querySelector('.type-btn.active-neg, .type-btn.active-pos');
+    const type = btn?.id === 'btnExpense' ? 'expense' : 'income';
     const desc=document.getElementById('fDesc').value.trim();
     const amt=parseFloat(document.getElementById('fAmt').value);
     const cat=document.getElementById('fCat').value;
@@ -248,7 +252,35 @@
     // saveEntries(entries);
     // document.getElementById('fDesc').value='';
     // document.getElementById('fAmt').value='';
-    alert(date);
+    const expense = { ExpenseType :type, Description: desc, Amount: amt, Category: cat, DateofExpense: date };
+      $.ajax({
+          url: "/Member/Expense",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(expense),
+          success: function(response) {
+              if(response.success) {
+                  Swal.fire({
+                  text: response.message,
+                  icon: "success",
+                  theme: 'dark'
+                });
+              }else{
+                 Swal.fire({
+                  text: "✗ Failed to save the entry.",
+                  icon: "error",
+                  theme: 'dark'
+                });
+                 return false;
+              }
+            
+          },
+          error: function(error) {
+             alert('✗ An error occurred during contacting.');
+             return false;
+          }
+      });
+
     closeModal(); renderAll();
   }
 

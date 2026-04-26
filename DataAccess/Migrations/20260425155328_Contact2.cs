@@ -10,15 +10,11 @@ namespace DataAccess.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "Rating",
-                schema: "public",
-                table: "contact",
-                type: "integer",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "text",
-                oldNullable: true);
+            migrationBuilder.Sql(
+    @"ALTER TABLE public.contact 
+      ALTER COLUMN ""Rating"" TYPE integer 
+      USING ""Rating""::integer;"
+);
         }
 
         /// <inheritdoc />

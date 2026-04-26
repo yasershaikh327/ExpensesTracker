@@ -27,5 +27,11 @@ namespace DataAccess.Helper
 
             return result == PasswordVerificationResult.Success;
         }
+
+        public enum ExpenseType
+        {
+            income,
+            expense
+        }
     }
 }

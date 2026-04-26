@@ -11,6 +11,7 @@ namespace DataAccess.Repository.Interface
     {
         public string AddMember(RegistrationDTO registrationDto);
         public string Login(LoginDTO loginDto);
+        public string AddExpense(ExpenseDTO expense);
         public TokenData GetUserDetails(string token);
         public string GenerateToken(string email, string name, int id);
     }

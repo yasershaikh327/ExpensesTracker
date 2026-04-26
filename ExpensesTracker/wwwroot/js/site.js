@@ -165,8 +165,8 @@ function renderModal() {
       <div class="form-row">
         <label>Type</label>
         <div class="type-toggle">
-          <button class="type-btn active-neg" id="btnExpense" onclick="setType('expense')">Expense −</button>
-          <button class="type-btn"            id="btnIncome"  onclick="setType('income')">Income +</button>
+          <button class="type-btn active-neg" id="btnExpense" onclick="setType('expense')" value="expense">Expense −</button>
+          <button class="type-btn"            id="btnIncome"  onclick="setType('income')" value="income">Income +</button>
         </div>
       </div>
       <div class="form-row">

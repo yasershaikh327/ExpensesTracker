@@ -18,15 +18,17 @@ namespace DataAccess.Repository
         private readonly DbPostgreContext _postgreContext;
         private readonly IRegistrationMapper _registrationMapper;
         private readonly ILoginMapper _loginMapper;
+        private readonly IExpenseMapper _expenseMapper;
         private readonly IHelper _helper;
         private readonly IConfiguration _configuration; 
-        public MemberRepository(DbPostgreContext postgreContext, IRegistrationMapper registrationMapper, ILoginMapper loginMapper, IHelper helper, IConfiguration configuration) 
+        public MemberRepository(DbPostgreContext postgreContext, IRegistrationMapper registrationMapper, ILoginMapper loginMapper, IExpenseMapper expenseMapper, IHelper helper, IConfiguration configuration) 
         { 
             _postgreContext = postgreContext;
             _registrationMapper = registrationMapper;
             _loginMapper = loginMapper;
             _helper = helper;
             _configuration = configuration;
+            _expenseMapper = expenseMapper; 
         }
 
         public string AddMember(RegistrationDTO registrationDto)
@@ -113,6 +115,14 @@ namespace DataAccess.Repository
             };
 
             return tokenData;
+        }
+
+        public string AddExpense(ExpenseDTO expense)
+        {
+            var mapper = _expenseMapper.Map(expense);
+            _postgreContext.Add(mapper);
+            _postgreContext.SaveChanges();
+            return "Expense added successfully.";
         }
     }
 }
