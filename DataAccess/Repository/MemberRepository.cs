@@ -7,6 +7,7 @@ using ExpensesTracker.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 
@@ -51,20 +52,22 @@ namespace DataAccess.Repository
                 existingUser.LastLogin = DateTime.UtcNow;  
                 _postgreContext.loginLogs.Add(LoginLogs);
                 _postgreContext.SaveChanges();
-                return GenerateToken(existingUser!.Email);
+                return GenerateToken(existingUser!.Email, existingUser!.Name, existingUser!.Id);
             }
-            return "User Not Found";
+            return null;
         }
 
-        public string GenerateToken(string email)
+        public string GenerateToken(string email, string name, int id)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Key"]));
 
             var claims = new[]
             {
-        new Claim(ClaimTypes.Name, email),
-        new Claim(ClaimTypes.Role, "User")
-    };
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Name, name),
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                new Claim(ClaimTypes.Role, "User")
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Issuer"],
@@ -75,6 +78,41 @@ namespace DataAccess.Repository
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public TokenData GetUserDetails(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return null;
+            }
+
+            token = token.Replace("Bearer ", "").Trim();
+
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+
+            var userId = jwtToken.Claims.FirstOrDefault(x =>
+                x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+            var email = jwtToken.Claims.FirstOrDefault(x =>
+                x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+
+            var name = jwtToken.Claims.FirstOrDefault(x =>
+                x.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+
+            var role = jwtToken.Claims.FirstOrDefault(x =>
+                x.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+
+            var tokenData = new TokenData
+            {
+                Email = email,
+                Name = name,
+                UserId = userId,
+                Role = role
+            };
+
+            return tokenData;
         }
     }
 }

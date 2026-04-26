@@ -4,6 +4,7 @@ using DataAccess.Repository.Interface;
 using ExpensesTracker.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace ExpensesTracker.Controllers
 {
@@ -69,8 +70,14 @@ namespace ExpensesTracker.Controllers
         {
             if (ModelState.IsValid)
             {
-                var data = _memberRepository.Login(login);
-                return Json(new { success = true, message = "Login Successful", token = data });
+                var token = _memberRepository.Login(login);
+                if (token != null)
+                {
+                    var token_data = _memberRepository.GetUserDetails(token);
+                    Response.Cookies.Append("MemberName", token_data.Name);
+                    return Json(new { success = true, message = "Login Successful", token = token });
+                }
+                return Json(new { success = false });
             }
             return Json(new { success = false, message = "Please fill out all required fields correctly." });
         }

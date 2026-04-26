@@ -190,10 +190,17 @@
           data: JSON.stringify(login),
           success: function(response) {
               sessionStorage.setItem('ft_user', JSON.stringify(login));
-              sucEl.textContent = response.message;
-              sucEl.classList.add('show');
-              document.cookie = "jwtToken=" + response.token + "; path=/; max-age=86400; SameSite=Lax";
-              setTimeout(() => { window.location.href = '/Member/Index'; }, 3500);
+              if(response.message!=null){
+                  sucEl.textContent = response.message;
+                  sucEl.classList.add('show');
+                  document.cookie = "jwtToken=" + response.token + "; path=/; max-age=86400; SameSite=Lax";
+                  setTimeout(() => { window.location.href = '/Member/Index'; }, 3500);
+              }
+              else{
+                errEl.textContent = '✗ User Not Found.';
+                errEl.classList.add('show');
+                setTimeout(() => { window.location.href = '/Home/Login'; }, 1000);
+              }
           },
           error: function(error) {
               errEl.textContent = '✗ An error occurred during login.';

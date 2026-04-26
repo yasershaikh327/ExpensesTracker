@@ -53,19 +53,19 @@ function getNextId(entries) { return entries.length ? Math.max(...entries.map(e 
 /* ── Nav page definitions ── */
 const NAV_PAGES = [
     {
-        id: 'dashboard', label: 'Dashboard', href: '/Home/Index',
+        id: 'dashboard', label: 'Dashboard', href: '/Member/Index',
         icon: `<rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".8"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/>`,
     },
     {
-        id: 'transactions', label: 'Transactions', href: '/Home/Transactions',
+        id: 'transactions', label: 'Transactions', href: '/Member/Transactions',
         icon: `<path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
     },
     {
-        id: 'budget', label: 'Budget', href: '/Home/Budget',
+        id: 'budget', label: 'Budget', href: '/Member/Budget',
         icon: `<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
     },
     {
-        id: 'reports', label: 'Reports', href: '/Home/Reports',
+        id: 'reports', label: 'Reports', href: '/Member/Reports',
         icon: `<path d="M2 14V9l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>`,
     },
     {
@@ -93,10 +93,9 @@ function renderSidebar(activePage) {
     </nav>
     <div class="sidebar-footer">
       <div class="avatar-row">
-        <div class="avatar">AK</div>
+        <div class="avatar">${decodeURIComponent(document.cookie.split('; ').find(row => row.startsWith('MemberName='))?.split('=')[1] || '').split(' ').map(word => word.charAt(0).toUpperCase()).join('')}</div>
         <div>
-          <div class="avatar-name">Arjun K.</div>
-          <div class="avatar-role">personal · goa</div>
+          <div class="avatar-name">${document.cookie.split('; ').find(row => row.startsWith('MemberName=')).split('=')[1]}</div>
         </div>
       </div>
     </div>
@@ -126,10 +125,9 @@ function renderMobileNav(activePage) {
     </nav>
     <div class="drawer-footer">
       <div class="avatar-row">
-        <div class="avatar">AK</div>
+        <div class="avatar">${decodeURIComponent(document.cookie.split('; ').find(row => row.startsWith('MemberName='))?.split('=')[1] || '').split(' ').map(word => word.charAt(0).toUpperCase()).join('')}</div>
         <div>
-          <div class="avatar-name">Arjun K.</div>
-          <div class="avatar-role">personal · goa</div>
+          <div class="avatar-name">${document.cookie.split('; ').find(row => row.startsWith('MemberName=')).split('=')[1]}</div>
         </div>
       </div>
     </div>
@@ -203,6 +201,7 @@ function renderModal() {
     </div>
   </div>`;
 }
+
 
 /* ── Shared modal state & logic ── */
 let _entryType = 'expense';

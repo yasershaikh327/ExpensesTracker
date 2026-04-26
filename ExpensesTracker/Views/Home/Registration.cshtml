@@ -253,7 +253,6 @@
     const email    = document.getElementById('rEmail').value.trim();
     const pw       = document.getElementById('rPassword').value;
     const cf       = document.getElementById('rConfirm').value;
-    const terms    = document.getElementById('termsCheck').checked;
     const errEl    = document.getElementById('regError');
     const sucEl    = document.getElementById('regSuccess');
 
@@ -274,10 +273,6 @@
     }
     if (pw !== cf) {
       errEl.textContent = '✗ Passwords do not match.';
-      errEl.classList.add('show'); return;
-    }
-    if (!terms) {
-      errEl.textContent = '✗ Please accept the Terms of Service to continue.';
       errEl.classList.add('show'); return;
     }
 

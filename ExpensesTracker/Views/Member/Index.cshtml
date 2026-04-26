@@ -244,10 +244,11 @@
     const cat=document.getElementById('fCat').value;
     const date=document.getElementById('fDate').value;
     if (!desc||!amt||amt<=0||!date){alert('Please fill all fields.');return;}
-    entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
-    saveEntries(entries);
-    document.getElementById('fDesc').value='';
-    document.getElementById('fAmt').value='';
+    // entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
+    // saveEntries(entries);
+    // document.getElementById('fDesc').value='';
+    // document.getElementById('fAmt').value='';
+    alert(date);
     closeModal(); renderAll();
   }
 
