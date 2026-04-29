@@ -12,7 +12,11 @@ namespace DataAccess.Repository.Interface
         public string AddMember(RegistrationDTO registrationDto);
         public string Login(LoginDTO loginDto);
         public string AddExpense(ExpenseDTO expense);
-        public TokenData GetUserDetails(string token);
+        public TokenData GetUserDetailsByToken(string token);
+        public RegistrationDTO GetUserDetailsByEmail(string Email);
         public string GenerateToken(string email, string name, int id);
+        //public string ForgetPassword(ForgetPasswordDTO forgetPassword);
+        public bool CheckIfEmailExists(ForgetPasswordDTO forgetPassword);
+        public int ResetPassword(ResetPasswordDTO resetPassword);
     }
 }

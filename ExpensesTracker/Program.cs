@@ -1,4 +1,5 @@
 
+using BrevoEmailSender;
 using DataAccess.Helper;
 using DataAccess.Helper.Interface;
 using DataAccess.Mappers;
@@ -15,6 +16,7 @@ using System.Text;
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+var brevoOptions = new BrevoOptions();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -24,7 +26,12 @@ builder.Services.AddScoped<IExpenseMapper, ExpenseMapper>();
 builder.Services.AddScoped<IContactMapper, ContactMapper>();  
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();  
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();  
-builder.Services.AddScoped<IHelper, Helper>();  
+builder.Services.AddScoped<IForgetPassword, ForgetPassword>();  
+builder.Services.AddScoped<IHelper, Helper>();
+builder.Configuration.GetSection("Brevo").Bind(brevoOptions);
+builder.Services.AddSingleton(brevoOptions);
+builder.Services.AddHttpClient<IBrevoEmailService, BrevoEmailService>();
+
 builder.Services.AddDbContext<DbPostgreContext>(options =>
     options.UseNpgsql(Environment.GetEnvironmentVariable("DatabaseConnection"))
 );

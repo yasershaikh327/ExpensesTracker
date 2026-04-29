@@ -11,12 +11,10 @@ namespace ExpensesTracker.Controllers
     [Authorize]
     public class MemberController : Controller
     {
-        private readonly IConfiguration _configuration;
         private readonly IMemberRepository _memberRepository;
 
-        public MemberController(IConfiguration configuration, IMemberRepository memberRepository)
+        public MemberController(IMemberRepository memberRepository)
         {
-            _configuration = configuration;
             _memberRepository = memberRepository;
         }
 
@@ -30,7 +28,7 @@ namespace ExpensesTracker.Controllers
         {
             if (ModelState.IsValid)
             {
-                var token_data = _memberRepository.GetUserDetails(Request.Cookies["jwtToken"].ToString());
+                var token_data = _memberRepository.GetUserDetailsByToken(Request.Cookies["jwtToken"].ToString());
                 expense.UserId = Convert.ToInt32(token_data.UserId);
                 var data = _memberRepository.AddExpense(expense);
                 return Json(new { success = true, message = data });
@@ -42,10 +40,12 @@ namespace ExpensesTracker.Controllers
         {
             return View();
         }
+
         public IActionResult Budget()
         {
             return View();
         }
+
         public IActionResult Reports()
         {
             return View();

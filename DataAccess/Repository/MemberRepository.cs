@@ -1,4 +1,5 @@
-﻿using DataAccess.DtoModels;
+﻿using AutoMapper;
+using DataAccess.DtoModels;
 using DataAccess.Helper.Interface;
 using DataAccess.Mappers.Interface;
 using DataAccess.Models;
@@ -82,7 +83,7 @@ namespace DataAccess.Repository
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public TokenData GetUserDetails(string token)
+        public TokenData GetUserDetailsByToken(string token)
         {
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -123,6 +124,50 @@ namespace DataAccess.Repository
             _postgreContext.Add(mapper);
             _postgreContext.SaveChanges();
             return "Expense added successfully.";
+        }
+
+        public bool CheckIfEmailExists(ForgetPasswordDTO forgetPassword)
+        {
+            var existingUser = _postgreContext.registrations.FirstOrDefault(r => r.Email == forgetPassword.Email);
+            if (existingUser != null)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public RegistrationDTO GetUserDetailsByEmail(string Email)
+        {
+            var existingUser = _postgreContext.registrations.FirstOrDefault(r => r.Email == Email);
+            if (existingUser != null)
+            {
+                 var registrationDto = new RegistrationDTO 
+                 { 
+                     Name = existingUser.Name,
+                     Email = existingUser.Email 
+                 };
+
+                return registrationDto;
+            }
+            return null;
+        }
+
+        public int ResetPassword(ResetPasswordDTO resetPassword)
+        {
+            var ValidEmail = _helper.VerifyPassword(resetPassword.Email, resetPassword.Code);
+            if(ValidEmail)
+            {
+                var VerifyOldPassword = _helper.VerifyPassword(resetPassword.OldPassword, _postgreContext.registrations.FirstOrDefault(r => r.Email == resetPassword.Email).Password);
+                var existingUser = _postgreContext.registrations.FirstOrDefault(r => r.Email == resetPassword.Email && VerifyOldPassword);
+                if (existingUser != null)
+                {
+                    existingUser.Password = _helper.HashPassword(resetPassword.NewPassword != null ? resetPassword.NewPassword : string.Empty);
+                    _postgreContext.SaveChanges();
+                    return 1; // Password reset successful
+                }
+                return 0; // User not found
+            }
+            return -1; // Invalid email or code
         }
     }
 }
