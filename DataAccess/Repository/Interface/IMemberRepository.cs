@@ -1,6 +1,6 @@
-﻿using DataAccess.DtoModels;
+﻿using DataAccess.DtoModels.Request;
+using DataAccess.DtoModels.Response;
 using DataAccess.Models;
-using ExpensesTracker.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,5 +18,6 @@ namespace DataAccess.Repository.Interface
         //public string ForgetPassword(ForgetPasswordDTO forgetPassword);
         public bool CheckIfEmailExists(ForgetPasswordDTO forgetPassword);
         public int ResetPassword(ResetPasswordDTO resetPassword);
+        public DashboardResponse GetDashboardData(int userId);
     }
 }

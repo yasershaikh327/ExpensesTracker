@@ -1,6 +1,6 @@
-﻿using DataAccess.Mappers.Interface;
+﻿using DataAccess.DtoModels.Request;
+using DataAccess.Mappers.Interface;
 using DataAccess.Models;
-using ExpensesTracker.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;

@@ -1,4 +1,4 @@
-﻿using DataAccess.DtoModels;
+﻿using DataAccess.DtoModels.Request;
 using System;
 using System.Collections.Generic;
 using System.Text;

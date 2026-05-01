@@ -1,7 +1,6 @@
-using DataAccess.DtoModels;
+using DataAccess.DtoModels.Request;
 using DataAccess.Repository;
 using DataAccess.Repository.Interface;
-using ExpensesTracker.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -21,6 +20,14 @@ namespace ExpensesTracker.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        [HttpGet]
+        public JsonResult GetDashboardData()
+        {
+            var token_data = _memberRepository.GetUserDetailsByToken(Request.Cookies["jwtToken"].ToString());
+            var data = _memberRepository.GetDashboardData(Convert.ToInt32(token_data.UserId));
+            return Json(new { success = true, data });
         }
 
         [HttpPost]

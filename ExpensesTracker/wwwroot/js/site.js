@@ -95,7 +95,14 @@ function renderSidebar(activePage) {
       <div class="avatar-row">
         <div class="avatar">${decodeURIComponent(document.cookie.split('; ').find(row => row.startsWith('MemberName='))?.split('=')[1] || '').split(' ').map(word => word.charAt(0).toUpperCase()).join('')}</div>
         <div>
-          <div class="avatar-name">${document.cookie.split('; ').find(row => row.startsWith('MemberName=')).split('=')[1]}</div>
+          <div class="avatar-name">
+              ${decodeURIComponent(
+                  (document.cookie
+                      .split('; ')
+                      .find(row => row.startsWith('MemberName='))
+                      ?.split('=')[1] || 'User')
+              )}
+            </div>
         </div>
       </div>
     </div>

@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTrack — Dashboard</title>
-  <link rel="stylesheet" href="shared.css" />
   <link rel="stylesheet" href="~/css/site.css" />
   <script src="~/js/site.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -129,15 +128,15 @@
 
   function updateStats() {
     const spent = totalAmt(getExpenses()), income = totalAmt(getIncome());
-    const savings = income - spent;
-    document.getElementById('statSpent').textContent   = fmt_inr(spent);
-    document.getElementById('statIncome').textContent  = fmt_inr(income);
-    document.getElementById('statSavings').textContent = fmt_inr(Math.abs(savings));
-    document.getElementById('statSpentChg').innerHTML  = `<span class="down">${getExpenses().length} transactions</span>`;
-    document.getElementById('statIncomeChg').innerHTML = `<span class="up">${getIncome().length} credits</span>`;
-    document.getElementById('statSavingsChg').innerHTML = savings >= 0
-      ? `<span class="up">▲ net positive</span>`
-      : `<span class="down">▼ net negative</span>`;
+    // const savings = income - spent;
+    // document.getElementById('statSpent').textContent   = fmt_inr(spent);
+    // document.getElementById('statIncome').textContent  = fmt_inr(income);
+    // document.getElementById('statSavings').textContent = fmt_inr(Math.abs(savings));
+    // document.getElementById('statSpentChg').innerHTML  = `<span class="down">${getExpenses().length} transactions</span>`;
+    // document.getElementById('statIncomeChg').innerHTML = `<span class="up">${getIncome().length} credits</span>`;
+    // document.getElementById('statSavingsChg').innerHTML = savings >= 0
+    //   ? `<span class="up">▲ net positive</span>`
+    //   : `<span class="down">▼ net negative</span>`;
   }
 
   function filterTx(f, btn) {
@@ -147,97 +146,316 @@
     renderTxList();
   }
 
-  function renderTxList() {
+ async function renderTxList() {
     const el = document.getElementById('txList');
-    let data = [...entries].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 20);
-    if (txFilter === 'expense') data = data.filter(e => e.type === 'expense');
-    if (txFilter === 'income')  data = data.filter(e => e.type === 'income');
-    if (!data.length) { el.innerHTML = '<div class="empty-state">no entries yet</div>'; return; }
-    el.innerHTML = data.map(e => {
-      const m = CAT_META[e.cat] || CAT_META.Other;
-      const sign = e.type === 'income' ? '+' : '-';
-      const cls  = e.type === 'income' ? 'pos' : 'neg';
-      const dStr = new Date(e.date+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
-      return `<div class="tx-item">
-        <div class="tx-icon" style="background:${m.color}22;">${m.icon}</div>
-        <div style="flex:1;min-width:0;">
-          <div class="tx-name">${e.desc}</div>
-          <div class="tx-cat">${e.cat}</div>
-        </div>
-        <div class="tx-date">${dStr}</div>
-        <div class="tx-amount ${cls}">${sign}${fmt_inr(e.amt)}</div>
-      </div>`;
-    }).join('');
-  }
+    if (!el) return;
+
+    el.innerHTML = "Loading...";
+
+    try {
+        const response = await $.ajax({
+            url: "/Member/GetDashboardData",
+            method: "GET",
+            contentType: "application/json"
+        });
+
+        if (!response.success) {
+            el.innerHTML = '<div class="empty-state">Failed to load data</div>';
+            return;
+        }
+
+        let data = response.data.transaction || [];
+
+        // sorting
+        data = data
+            .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+            .slice(0, 20);
+
+        // filters
+        if (txFilter === 'expense') {
+            data = data.filter(e => (e.type2 || '').toLowerCase() === 'expense');
+        }
+
+        if (txFilter === 'income') {
+            data = data.filter(e => (e.type2 || '').toLowerCase() === 'income');
+        }
+
+        if (!data.length) {
+            el.innerHTML = '<div class="empty-state">no entries yet</div>';
+            return;
+        }
+
+        el.innerHTML = data.map(e => {
+            const category = e.category ?? null;
+            const amount = e.amount ?? null;
+            const description = e.description ?? null;
+            const type = (e.type2 ?? null)?.toLowerCase();
+
+            const meta = CAT_META[category] || CAT_META.Other;
+            const sign = type === 'income' ? '+' : '-';
+            const cls = type === 'income' ? 'pos' : 'neg';
+
+            const dStr = e.date
+                ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short'
+                })
+                : '--';
+
+            return `
+                <div class="tx-item">
+                    <div class="tx-icon" style="background:${meta.color}22;">${meta.icon}</div>
+
+                    <div style="flex:1;min-width:0;">
+                        <div class="tx-name">${description ?? 'null'}</div>
+                        <div class="tx-cat">${category ?? 'null'}</div>
+                    </div>
+
+                    <div class="tx-date">${dStr}</div>
+                    <div class="tx-amount ${cls}">
+                        ${sign}${amount !== null ? fmt_inr(amount) : 'null'}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        console.error(err);
+        el.innerHTML = '<div class="empty-state">Server error</div>';
+    }
+}
 
   function drawLineChart() {
-    const canvas = document.getElementById('lineChart');
-    if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.offsetWidth, H = canvas.offsetHeight;
-    canvas.width = W*dpr; canvas.height = H*dpr;
-    const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr);
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate()-i);
-      const key = fmt(d);
-      const sum = getExpenses().filter(e=>e.date===key).reduce((s,e)=>s+e.amt,0);
-      days.push({ label: d.toLocaleDateString('en-IN',{weekday:'short'}), val: sum });
-    }
-    const maxV = Math.max(...days.map(d=>d.val), 1000);
-    const pad = {t:10,r:10,b:28,l:50};
-    const cW = W-pad.l-pad.r, cH = H-pad.t-pad.b;
-    ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='#2a2a27'; ctx.lineWidth=0.5;
-    [0,.25,.5,.75,1].forEach(f=>{
-      const y=pad.t+cH*(1-f);
-      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
-      ctx.fillStyle='#444440'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='right';
-      ctx.fillText('₹'+(maxV*f/1000).toFixed(0)+'k',pad.l-6,y+4);
-    });
-    ctx.fillStyle='#444440'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
-    days.forEach((d,i)=>ctx.fillText(d.label, pad.l+i/(days.length-1)*cW, H-4));
-    const pts = days.map((d,i)=>({x:pad.l+i/(days.length-1)*cW, y:pad.t+cH*(1-d.val/maxV)}));
-    const grad = ctx.createLinearGradient(0,pad.t,0,pad.t+cH);
-    grad.addColorStop(0,'rgba(139,124,248,0.3)'); grad.addColorStop(1,'rgba(139,124,248,0)');
-    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-    pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
-    ctx.lineTo(pts[pts.length-1].x,pad.t+cH); ctx.lineTo(pts[0].x,pad.t+cH);
-    ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-    pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
-    ctx.strokeStyle='#8b7cf8'; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.stroke();
-    pts.forEach(p=>{
-      ctx.beginPath(); ctx.arc(p.x,p.y,3.5,0,Math.PI*2);
-      ctx.fillStyle='#8b7cf8'; ctx.fill();
-      ctx.strokeStyle='#0d0d0b'; ctx.lineWidth=1.5; ctx.stroke();
-    });
-  }
+  const canvas = document.getElementById('lineChart');
+  if (!canvas) return;
 
-  function drawDonut() {
-    const svg=document.getElementById('donutSvg'), legend=document.getElementById('donutLegend');
-    const cats={};
-    getExpenses().forEach(e=>{cats[e.cat]=(cats[e.cat]||0)+e.amt;});
-    const total=Object.values(cats).reduce((s,v)=>s+v,0);
-    document.getElementById('donutCenterVal').textContent = total>0 ? fmt_inr(total) : '₹0';
-    if (!total){svg.innerHTML='';legend.innerHTML='';return;}
-    const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-    const cx=70,cy=70,R=54,r=36,tau=Math.PI*2; let angle=-Math.PI/2, paths='';
-    sorted.forEach(([cat,val])=>{
-      const frac=val/total, sweep=frac*tau;
-      const x1=cx+R*Math.cos(angle),y1=cy+R*Math.sin(angle);
-      const x2=cx+R*Math.cos(angle+sweep),y2=cy+R*Math.sin(angle+sweep);
-      const xi1=cx+r*Math.cos(angle+sweep),yi1=cy+r*Math.sin(angle+sweep);
-      const xi2=cx+r*Math.cos(angle),yi2=cy+r*Math.sin(angle);
-      const color=(CAT_META[cat]||CAT_META.Other).color;
-      paths+=`<path d="M${x1} ${y1} A${R} ${R} 0 ${sweep>Math.PI?1:0} 1 ${x2} ${y2} L${xi1} ${yi1} A${r} ${r} 0 ${sweep>Math.PI?1:0} 0 ${xi2} ${yi2} Z" fill="${color}" opacity="0.9"/>`;
-      angle+=sweep;
+  $.ajax({
+    url: "/Member/GetDashboardData",
+    method: "GET",
+    success: function (response) {
+      if (!response.success || !response.data?.transaction?.length) return;
+
+      const tx = response.data.transaction;
+      const dpr = window.devicePixelRatio || 1;
+      const W = canvas.offsetWidth, H = canvas.offsetHeight;
+
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+
+      const days = [];
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+
+        const key = d.toISOString().split('T')[0];
+
+        const sum = tx
+          .filter(e => e.date === key && e.type === "D")
+          .reduce((s, e) => s + Number(e.amount || 0), 0);
+
+        days.push({
+          label: d.toLocaleDateString('en-IN', { weekday: 'short' }),
+          val: sum
+        });
+      }
+
+      const maxV = Math.max(...days.map(d => d.val), 1000);
+      const pad = { t: 10, r: 10, b: 28, l: 50 };
+      const cW = W - pad.l - pad.r;
+      const cH = H - pad.t - pad.b;
+
+      ctx.clearRect(0, 0, W, H);
+
+      ctx.strokeStyle = '#2a2a27';
+      ctx.lineWidth = 0.5;
+
+      [0, .25, .5, .75, 1].forEach(f => {
+        const y = pad.t + cH * (1 - f);
+
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(W - pad.r, y);
+        ctx.stroke();
+
+        ctx.fillStyle = '#444440';
+        ctx.font = '9px JetBrains Mono, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('₹' + (maxV * f / 1000).toFixed(0) + 'k', pad.l - 6, y + 4);
+      });
+
+      ctx.fillStyle = '#444440';
+      ctx.font = '9px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+
+      days.forEach((d, i) => {
+        ctx.fillText(d.label, pad.l + i / (days.length - 1) * cW, H - 4);
+      });
+
+      const pts = days.map((d, i) => ({
+        x: pad.l + i / (days.length - 1) * cW,
+        y: pad.t + cH * (1 - d.val / maxV)
+      }));
+
+      const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + cH);
+      grad.addColorStop(0, 'rgba(139,124,248,0.3)');
+      grad.addColorStop(1, 'rgba(139,124,248,0)');
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(pts[pts.length - 1].x, pad.t + cH);
+      ctx.lineTo(pts[0].x, pad.t + cH);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.strokeStyle = '#8b7cf8';
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      pts.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#8b7cf8';
+        ctx.fill();
+        ctx.strokeStyle = '#0d0d0b';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+    }
+  });
+}
+
+ function drawDonut() {
+  const svg = document.getElementById('donutSvg');
+  const legend = document.getElementById('donutLegend');
+  if (!svg || !legend) return;
+
+  $.ajax({
+    url: "/Member/GetDashboardData",
+    method: "GET",
+    success: function (response) {
+      if (!response.success || !response.data?.transaction?.length) {
+        svg.innerHTML = '';
+        legend.innerHTML = '';
+        document.getElementById('donutCenterVal').textContent = '₹0';
+        return;
+      }
+
+      const tx = response.data.transaction;
+      const cats = {};
+
+      // Group only debit transactions by category
+      tx.forEach(e => {
+        if (e.type !== "D") return;
+
+        const cat = e.category || "Other";
+        const amt = Number(e.amount || 0);
+
+        cats[cat] = (cats[cat] || 0) + amt;
+      });
+
+      const total = Object.values(cats).reduce((s, v) => s + v, 0);
+
+      document.getElementById('donutCenterVal').textContent =
+        total > 0 ? fmt_inr(total) : '₹0';
+
+      if (!total) {
+        svg.innerHTML = '';
+        legend.innerHTML = '';
+        return;
+      }
+
+      const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+
+      const cx = 70, cy = 70, R = 54, r = 36, tau = Math.PI * 2;
+      let angle = -Math.PI / 2;
+      let paths = '';
+
+      sorted.forEach(([cat, val]) => {
+        const frac = val / total;
+        const sweep = frac * tau;
+
+        const x1 = cx + R * Math.cos(angle);
+        const y1 = cy + R * Math.sin(angle);
+
+        const x2 = cx + R * Math.cos(angle + sweep);
+        const y2 = cy + R * Math.sin(angle + sweep);
+
+        const xi1 = cx + r * Math.cos(angle + sweep);
+        const yi1 = cy + r * Math.sin(angle + sweep);
+
+        const xi2 = cx + r * Math.cos(angle);
+        const yi2 = cy + r * Math.sin(angle);
+
+        const color = (CAT_META[cat] || CAT_META.Other).color;
+
+        paths += `
+          <path d="M${x1} ${y1}
+                   A${R} ${R} 0 ${sweep > Math.PI ? 1 : 0} 1 ${x2} ${y2}
+                   L${xi1} ${yi1}
+                   A${r} ${r} 0 ${sweep > Math.PI ? 1 : 0} 0 ${xi2} ${yi2}
+                   Z"
+                fill="${color}"
+                opacity="0.9"/>
+        `;
+
+        angle += sweep;
+      });
+
+      svg.innerHTML = paths;
+
+      legend.innerHTML = sorted.slice(0, 5).map(([cat, val]) => {
+        const pct = Math.round((val / total) * 100);
+        const color = (CAT_META[cat] || CAT_META.Other).color;
+
+        return `
+          <div class="legend-row">
+            <div class="legend-dot" style="background:${color}"></div>
+            <div class="legend-name">${cat}</div>
+            <div class="legend-pct" style="color:${color}">${pct}%</div>
+          </div>
+        `;
+      }).join('');
+    },
+    error: function () {
+      svg.innerHTML = '';
+      legend.innerHTML = '';
+      document.getElementById('donutCenterVal').textContent = '₹0';
+      console.error("Failed to load donut chart data");
+    }
+  });
+}
+  GetAllData();
+  function GetAllData(){
+    $.ajax({
+        url: "/Member/GetDashboardData",
+        method: "GET",
+        success: function(response) {
+            document.getElementById('statSpent').textContent   = fmt_inr(response.data.totalSpent);
+            document.getElementById('statIncome').textContent  = fmt_inr(response.data.totalIncome);
+            document.getElementById('statSavings').textContent = fmt_inr((response.data.netSaving));
+            document.getElementById('statSpentChg').innerHTML  = `<span class="down">${response.data.noofTransactions} transactions</span>`;
+            document.getElementById('statIncomeChg').innerHTML = `<span class="up">${response.data.credits} credits</span>`;
+            document.getElementById('statSavingsChg').innerHTML = response.data.status == 'P'
+            ? `<span class="up">▲ net positive</span>`
+        : `<span class="down">▼ net negative</span>`;
+          
+        },
+        error: function(error) {
+           alert('✗ An error occurred during contacting.');
+           return false;
+        }
     });
-    svg.innerHTML=paths;
-    legend.innerHTML=sorted.slice(0,5).map(([cat,val])=>{
-      const pct=Math.round(val/total*100), color=(CAT_META[cat]||CAT_META.Other).color;
-      return `<div class="legend-row"><div class="legend-dot" style="background:${color}"></div><div class="legend-name">${cat}</div><div class="legend-pct" style="color:${color}">${pct}%</div></div>`;
-    }).join('');
   }
 
   function saveEntry() {
@@ -265,6 +483,9 @@
                   icon: "success",
                   theme: 'dark'
                 });
+               setTimeout(function () {
+                    location.reload();
+                }, 1500);
               }else{
                  Swal.fire({
                   text: "✗ Failed to save the entry.",

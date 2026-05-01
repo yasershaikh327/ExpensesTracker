@@ -1,4 +1,4 @@
-﻿using DataAccess.DtoModels;
+﻿using DataAccess.DtoModels.Request;
 using DataAccess.Mappers.Interface;
 using DataAccess.Repository.Interface;
 using System;

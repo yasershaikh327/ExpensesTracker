@@ -5,65 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTrack — Transactions</title>
     <link rel="stylesheet" href="~/css/site.css" />
-  <script src="~/js/site.js"></script>
-  <style>
-    .search-bar {
-      width: 100%; background: var(--bg-raised);
-      border: 1px solid var(--border-hi); border-radius: var(--radius-sm);
-      color: var(--text-primary); font-family: var(--font-mono);
-      font-size: 13px; padding: 9px 14px; outline: none;
-      margin-bottom: 14px; transition: border-color 0.15s;
-    }
-    .search-bar:focus { border-color: var(--purple); }
-    .search-bar::placeholder { color: var(--text-muted); }
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+      <script src="~/js/site.js"></script>
+      <style>
+        .search-bar {
+          width: 100%; background: var(--bg-raised);
+          border: 1px solid var(--border-hi); border-radius: var(--radius-sm);
+          color: var(--text-primary); font-family: var(--font-mono);
+          font-size: 13px; padding: 9px 14px; outline: none;
+          margin-bottom: 14px; transition: border-color 0.15s;
+        }
+        .search-bar:focus { border-color: var(--purple); }
+        .search-bar::placeholder { color: var(--text-muted); }
 
-    .cat-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
-    .cat-chip {
-      font-size: 11px; font-family: var(--font-mono);
-      padding: 4px 10px; border-radius: 20px;
-      border: 1px solid var(--border); background: transparent;
-      color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
-    }
-    .cat-chip:hover { border-color: var(--border-hi); color: var(--text-primary); }
-    .cat-chip.active { color: #0d0d0b; border-color: transparent; }
+        .cat-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+        .cat-chip {
+          font-size: 11px; font-family: var(--font-mono);
+          padding: 4px 10px; border-radius: 20px;
+          border: 1px solid var(--border); background: transparent;
+          color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+        }
+        .cat-chip:hover { border-color: var(--border-hi); color: var(--text-primary); }
+        .cat-chip.active { color: #0d0d0b; border-color: transparent; }
 
-    /* Desktop table header */
-    .tx-table-head {
-      display: grid;
-      grid-template-columns: 36px 1fr 100px 80px 90px;
-      gap: 12px; padding: 8px 14px;
-      font-size: 9px; font-weight: 600; letter-spacing: 0.1em;
-      text-transform: uppercase; color: var(--text-muted);
-      border-bottom: 1px solid var(--border); margin-bottom: 4px;
-    }
-    .tx-row {
-      display: grid;
-      grid-template-columns: 36px 1fr 100px 80px 90px;
-      gap: 12px; align-items: center;
-      padding: 11px 14px; border-radius: var(--radius-md);
-      transition: background 0.12s;
-    }
-    .tx-row:hover { background: var(--bg-raised); }
-    .tx-row .tx-icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px; }
-    .tx-row .tx-amount { font-family:var(--font-mono);font-size:13px;font-weight:500;text-align:right; }
-    .tx-row .tx-amount.neg { color:var(--coral); }
-    .tx-row .tx-amount.pos { color:var(--teal); }
-    .tx-cat-badge { font-size:10px;font-family:var(--font-mono);padding:2px 8px;border-radius:20px;display:inline-block; }
-    .tx-date-col { font-size:11px;font-family:var(--font-mono);color:var(--text-secondary); }
-    .del-btn { background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;opacity:0;transition:opacity 0.15s,color 0.15s;padding:4px; }
-    .tx-row:hover .del-btn { opacity:1; }
-    .del-btn:hover { color:var(--coral); }
+        /* Desktop table header */
+        .tx-table-head {
+          display: grid;
+          grid-template-columns: 36px 1fr 100px 80px 90px;
+          gap: 12px; padding: 8px 14px;
+          font-size: 9px; font-weight: 600; letter-spacing: 0.1em;
+          text-transform: uppercase; color: var(--text-muted);
+          border-bottom: 1px solid var(--border); margin-bottom: 4px;
+        }
+        .tx-row {
+          display: grid;
+          grid-template-columns: 36px 1fr 100px 80px 90px;
+          gap: 12px; align-items: center;
+          padding: 11px 14px; border-radius: var(--radius-md);
+          transition: background 0.12s;
+        }
+        .tx-row:hover { background: var(--bg-raised); }
+        .tx-row .tx-icon { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px; }
+        .tx-row .tx-amount { font-family:var(--font-mono);font-size:13px;font-weight:500;text-align:right; }
+        .tx-row .tx-amount.neg { color:var(--coral); }
+        .tx-row .tx-amount.pos { color:var(--teal); }
+        .tx-cat-badge { font-size:10px;font-family:var(--font-mono);padding:2px 8px;border-radius:20px;display:inline-block; }
+        .tx-date-col { font-size:11px;font-family:var(--font-mono);color:var(--text-secondary); }
+        .del-btn { background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;opacity:0;transition:opacity 0.15s,color 0.15s;padding:4px; }
+        .tx-row:hover .del-btn { opacity:1; }
+        .del-btn:hover { color:var(--coral); }
 
-    .summary-strip {
-      display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
-      padding: 12px 14px; border-top: 1px solid var(--border);
-      margin-top: 8px; font-size: 12px; font-family: var(--font-mono);
-      color: var(--text-secondary);
-    }
-    .summary-strip span { color: var(--text-primary); font-weight: 500; }
+        .summary-strip {
+          display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+          padding: 12px 14px; border-top: 1px solid var(--border);
+          margin-top: 8px; font-size: 12px; font-family: var(--font-mono);
+          color: var(--text-secondary);
+        }
+        .summary-strip span { color: var(--text-primary); font-weight: 500; }
 
     
-  </style>
+      </style>
 </head>
 <body>
 <div class="shell">
@@ -136,49 +137,134 @@
   }
   function filterCat(c){catFilter=c;buildCatChips();renderTxList();}
 
-  function renderTxList() {
-    const search = document.getElementById('searchInput').value.trim().toLowerCase();
-    let data = [...entries].sort((a,b)=>b.date.localeCompare(a.date));
-    if (typeFilter==='expense') data=data.filter(e=>e.type==='expense');
-    if (typeFilter==='income')  data=data.filter(e=>e.type==='income');
-    if (catFilter!=='all')      data=data.filter(e=>e.cat===catFilter);
-    if (search) data=data.filter(e=>e.desc.toLowerCase().includes(search)||e.cat.toLowerCase().includes(search));
+  async function renderTxList() {
 
-    document.getElementById('countLabel').textContent=data.length+' entries';
-    if (!data.length){
-      document.getElementById('txRows').innerHTML='<div class="empty-state">no transactions match</div>';
-      document.getElementById('summaryStrip').innerHTML=''; return;
+  const search = document.getElementById('searchInput').value.trim().toLowerCase();
+
+  const txRowsEl = document.getElementById('txRows');
+  const countEl = document.getElementById('countLabel');
+  const summaryEl = document.getElementById('summaryStrip');
+
+  txRowsEl.innerHTML = 'Loading...';
+
+  try {
+
+    const response = await $.ajax({
+      url: "/Member/GetDashboardData",
+      method: "GET",
+      contentType: "application/json"
+    });
+
+    if (!response.success) {
+      txRowsEl.innerHTML = '<div class="empty-state">failed to load data</div>';
+      summaryEl.innerHTML = '';
+      return;
     }
 
-    document.getElementById('txRows').innerHTML = data.map(e=>{
-      const m=CAT_META[e.cat]||CAT_META.Other;
-      const sign=e.type==='income'?'+':'-', cls=e.type==='income'?'pos':'neg';
-      const dStr=new Date(e.date+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});
-      return `<div class="tx-row">
-        <div class="tx-icon" style="background:${m.color}22;">${m.icon}</div>
-        <div>
-          <div style="font-size:13px;font-weight:600;">${e.desc}</div>
-          <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-muted);">#${e.id}</div>
+    let data = response.data.transaction || [];
+
+    // normalize (important because API uses type2/category/amount/description)
+    data = data.map(e => ({
+      id: e.id ?? 0,
+      date: e.date,
+      type: e.type2,                 // income / expense
+      cat: e.category,
+      desc: e.description,
+      amt: Number(e.amount || 0)
+    }));
+
+    // sorting
+    data = data.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    // filters
+    if (typeFilter === 'expense') data = data.filter(e => e.type === 'expense');
+    if (typeFilter === 'income')  data = data.filter(e => e.type === 'income');
+    if (catFilter !== 'all')      data = data.filter(e => e.cat === catFilter);
+
+    // search
+    if (search) {
+      data = data.filter(e =>
+        (e.desc || '').toLowerCase().includes(search) ||
+        (e.cat || '').toLowerCase().includes(search)
+      );
+    }
+
+    // count
+    countEl.textContent = data.length + ' entries';
+
+    if (!data.length) {
+      txRowsEl.innerHTML = '<div class="empty-state">no transactions match</div>';
+      summaryEl.innerHTML = '';
+      return;
+    }
+
+    // render rows
+    txRowsEl.innerHTML = data.map(e => {
+
+      const m = CAT_META[e.cat] || CAT_META.Other;
+      const sign = e.type === 'income' ? '+' : '-';
+      const cls = e.type === 'income' ? 'pos' : 'neg';
+
+      const dStr = e.date
+        ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short',
+            year: '2-digit'
+          })
+        : '--';
+
+      return `
+        <div class="tx-row">
+          <div class="tx-icon" style="background:${m.color}22;">${m.icon}</div>
+
+          <div>
+            <div style="font-size:13px;font-weight:600;">
+              ${e.desc ?? 'null'}
+            </div>
+            <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-muted);">
+              #${e.id}
+            </div>
+          </div>
+
+          <div class="cat-badge-cell">
+            <span class="tx-cat-badge" style="background:${m.color}22;color:${m.color};">
+              ${e.cat ?? 'null'}
+            </span>
+          </div>
+
+          <div class="tx-date-col">${dStr}</div>
+
+          <div class="amount-del-cell" style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
+            <div class="tx-amount ${cls}">
+              ${sign}${fmt_inr(e.amt)}
+            </div>
+            <button class="del-btn" onclick="deleteEntry(${e.id})">✕</button>
+          </div>
         </div>
-        <div class="cat-badge-cell">
-          <span class="tx-cat-badge" style="background:${m.color}22;color:${m.color};">${e.cat}</span>
-        </div>
-        <div class="tx-date-col">${dStr}</div>
-        <div class="amount-del-cell" style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
-          <div class="tx-amount ${cls}">${sign}${fmt_inr(e.amt)}</div>
-          <button class="del-btn" onclick="deleteEntry(${e.id})">✕</button>
-        </div>
-      </div>`;
+      `;
     }).join('');
 
-    const totalExp=data.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amt,0);
-    const totalInc=data.filter(e=>e.type==='income').reduce((s,e)=>s+e.amt,0);
-    document.getElementById('summaryStrip').innerHTML=`
+    // summary
+    const totalExp = data.filter(e => e.type === 'expense').reduce((s, e) => s + e.amt, 0);
+    const totalInc = data.filter(e => e.type === 'income').reduce((s, e) => s + e.amt, 0);
+
+    const net = totalInc - totalExp;
+
+    summaryEl.innerHTML = `
       <div>Shown: <span>${data.length}</span></div>
       <div>Expenses: <span style="color:var(--coral)">${fmt_inr(totalExp)}</span></div>
       <div>Income: <span style="color:var(--teal)">${fmt_inr(totalInc)}</span></div>
-      <div>Net: <span style="color:${totalInc-totalExp>=0?'var(--teal)':'var(--coral)'}">${fmt_inr(Math.abs(totalInc-totalExp))}</span></div>`;
+      <div>Net: <span style="color:${net >= 0 ? 'var(--teal)' : 'var(--coral)'}">
+        ${fmt_inr(Math.abs(net))}
+      </span></div>
+    `;
+
+  } catch (err) {
+    console.error(err);
+    txRowsEl.innerHTML = '<div class="empty-state">server error</div>';
+    summaryEl.innerHTML = '';
   }
+}
 
   function deleteEntry(id){
     if (!confirm('Delete this entry?')) return;

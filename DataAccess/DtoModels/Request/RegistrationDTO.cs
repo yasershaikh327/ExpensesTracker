@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ExpensesTracker.Models
+namespace DataAccess.DtoModels.Request
 {
     public class RegistrationDTO
     {

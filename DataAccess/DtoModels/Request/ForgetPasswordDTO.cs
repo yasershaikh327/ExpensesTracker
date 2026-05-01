@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace DataAccess.DtoModels
+namespace DataAccess.DtoModels.Request
 {
     public class ForgetPasswordDTO
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataAccess.DtoModels
+namespace DataAccess.DtoModels.Request
 {
     public class TokenData
     {

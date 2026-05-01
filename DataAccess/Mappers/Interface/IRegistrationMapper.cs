@@ -1,5 +1,5 @@
-﻿using DataAccess.Models;
-using ExpensesTracker.Models;
+﻿using DataAccess.DtoModels.Request;
+using DataAccess.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;

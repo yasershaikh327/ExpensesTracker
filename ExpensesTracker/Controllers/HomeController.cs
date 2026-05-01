@@ -1,11 +1,10 @@
 using BrevoEmailSender;
-using DataAccess.DtoModels;
+using DataAccess.DtoModels.Request;
 using DataAccess.Helper.Interface;
 using DataAccess.Mappers;
 using DataAccess.Migrations;
 using DataAccess.Models;
 using DataAccess.Repository.Interface;
-using ExpensesTracker.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Security.Claims;

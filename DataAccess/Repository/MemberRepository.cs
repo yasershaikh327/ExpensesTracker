@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
-using DataAccess.DtoModels;
+using DataAccess.DtoModels.Request;
+using DataAccess.DtoModels.Response;
 using DataAccess.Helper.Interface;
 using DataAccess.Mappers.Interface;
 using DataAccess.Models;
 using DataAccess.Repository.Interface;
-using ExpensesTracker.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -168,6 +168,35 @@ namespace DataAccess.Repository
                 return 0; // User not found
             }
             return -1; // Invalid email or code
+        }
+
+        public DashboardResponse GetDashboardData(int userId)
+        {
+            var TotalSpent = _postgreContext.expense.Where(e => e.UserId == userId && e.ExpenseType == "expense").Sum(e => e.Amount);
+            var TotalIncome = _postgreContext.expense.Where(e => e.UserId == userId && e.ExpenseType == "income").Sum(e => e.Amount);
+            var NetSaving = TotalIncome - TotalSpent;
+            var NoofTransactions = _postgreContext.expense.Where(e => e.UserId == userId && e.ExpenseType == "expense").Count();
+            var Credits = _postgreContext.expense.Where(e => e.UserId == userId && e.ExpenseType == "income").Count();
+            var status = (TotalIncome >= TotalSpent) ? 'P' : 'N';
+            var dashboardResponse = new DashboardResponse
+            {
+                TotalSpent = TotalSpent,
+                TotalIncome = TotalIncome,
+                NetSaving = NetSaving,
+                NoofTransactions = NoofTransactions,
+                Credits = Convert.ToInt32(Credits),
+                Status = status,
+                Transaction = _postgreContext.expense.Where(e => e.UserId == userId).Select(e => new TransactionResponseDto
+                {
+                    Amount = e.Amount,
+                    Date = e.DateofExpense,
+                    Category = e.Category,
+                    Type = e.ExpenseType == "income" ? 'C' : 'D',
+                    Description = e.Description,
+                    Type2 = e.ExpenseType == "income" ? "income" : "expense"
+                }).ToList()
+            };
+            return dashboardResponse;
         }
     }
 }

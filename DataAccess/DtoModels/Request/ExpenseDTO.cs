@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 using static DataAccess.Helper.Helper;
 
-namespace DataAccess.DtoModels
+namespace DataAccess.DtoModels.Request
 {
     public class ExpenseDTO
     {
