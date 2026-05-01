@@ -6,6 +6,7 @@
   <title>FinTrack — Budget</title>
   <link rel="stylesheet" href="~/css/site.css" />
   <script src="~/js/site.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
     .budget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .budget-card {
@@ -63,7 +64,6 @@
     <div class="panel">
       <div class="panel-header">
         <div class="panel-title">Category Budgets</div>
-        <div class="panel-sub">Tap limit to edit</div>
       </div>
       <div class="budget-grid" id="budgetGrid"></div>
     </div>
@@ -89,16 +89,30 @@
   const getCatSpend=()=>{const c={};getExpenses().forEach(e=>{c[e.cat]=(c[e.cat]||0)+e.amt;});return c;};
 
   function updateOverview(catSpend){
-    const totalBudget=Object.values(budgets).reduce((s,v)=>s+v,0);
-    const totalSpent=Object.entries(catSpend).filter(([c])=>budgets[c]!==undefined).reduce((s,[,v])=>s+v,0);
-    const remaining=Math.max(totalBudget-totalSpent,0);
-    const pct=Math.round(totalSpent/totalBudget*100);
-    document.getElementById('totalBudget').textContent=fmt_inr(totalBudget);
-    document.getElementById('totalSpent').textContent=fmt_inr(totalSpent);
-    document.getElementById('totalRemaining').textContent=fmt_inr(remaining);
-    document.getElementById('spentPct').innerHTML=`<span class="${pct>80?'down':'up'}">${pct}% of budget</span>`;
-    const daysLeft=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate();
-    document.getElementById('remainingDays').innerHTML=`<span class="up">${daysLeft} days left</span>`;
+    // const totalBudget=Object.values(budgets).reduce((s,v)=>s+v,0);
+    // const totalSpent=Object.entries(catSpend).filter(([c])=>budgets[c]!==undefined).reduce((s,[,v])=>s+v,0);
+    // const remaining=Math.max(totalBudget-totalSpent,0);
+    // const pct=Math.round(totalSpent/totalBudget*100);
+    // document.getElementById('totalBudget').textContent=fmt_inr(totalBudget);
+    // document.getElementById('totalSpent').textContent=fmt_inr(totalSpent);
+    // document.getElementById('totalRemaining').textContent=fmt_inr(remaining);
+    // document.getElementById('spentPct').innerHTML=`<span class="${pct>80?'down':'up'}">${pct}% of budget</span>`;
+    // const daysLeft=new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate();
+    // document.getElementById('remainingDays').innerHTML=`<span class="up">${daysLeft} days left</span>`;
+     $.ajax({
+        url: "/Member/GetDashboardData",
+        method: "GET",
+        success: function(response) {
+            const remaining = response.data.totalIncome - response.data.totalSpent;
+            document.getElementById('totalSpent').textContent   = fmt_inr(response.data.totalSpent);
+            document.getElementById('totalBudget').textContent  = fmt_inr(response.data.totalIncome);
+            document.getElementById('totalRemaining').textContent = fmt_inr(response.data.netSaving);
+        },
+        error: function(error) {
+           alert('✗ An error occurred during contacting.');
+           return false;
+        }
+    });
   }
 
   function renderBudget(){
