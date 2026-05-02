@@ -32,13 +32,20 @@ namespace DataAccess.Repository
             _expenseMapper = expenseMapper; 
         }
 
-        public string AddMember(RegistrationDTO registrationDto)
+        public bool AddMember(RegistrationDTO registrationDto)
         {
-            registrationDto.Password = _helper.HashPassword(registrationDto.Password!=null ? registrationDto.Password : string.Empty);
-            var mapper =  _registrationMapper.Map(registrationDto);          
-            _postgreContext.registrations.Add(mapper);
-            _postgreContext.SaveChanges();
-            return "Member added successfully. Redirecting to Login Page";
+            if (_postgreContext.registrations.Any(r => r.Email == registrationDto.Email))
+            {
+                return false;
+            }
+            else
+            {
+                registrationDto.Password = _helper.HashPassword(registrationDto.Password != null ? registrationDto.Password : string.Empty);
+                var mapper = _registrationMapper.Map(registrationDto);
+                _postgreContext.registrations.Add(mapper);
+                _postgreContext.SaveChanges();
+                return true;
+            }
         }
 
         public string Login(LoginDTO loginDto)

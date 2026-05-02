@@ -288,10 +288,17 @@
           contentType: "application/json",
           data: JSON.stringify(registration),
           success: function(response) {
-              sessionStorage.setItem('ft_user', JSON.stringify(registration));
-              sucEl.textContent = response.message;
-              sucEl.classList.add('show');
-              setTimeout(() => { window.location.href = '/Home/Login'; }, 1500);
+              if(response.success){
+                  sessionStorage.setItem('ft_user', JSON.stringify(registration));
+                  sucEl.textContent = response.message;
+                  sucEl.classList.add('show');
+                  setTimeout(() => { window.location.href = '/Home/Login'; }, 1500);
+              }else{
+                    errEl.textContent = response.message || '✗ Registration failed.';
+                    errEl.classList.add('show');
+                    btn.textContent = 'Register'; btn.disabled = false;
+              }
+              
           },
           error: function(error) {
               errEl.textContent = '✗ An error occurred during registration.';

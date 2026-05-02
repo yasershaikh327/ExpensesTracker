@@ -9,7 +9,7 @@ namespace DataAccess.Repository.Interface
 {
     public interface IMemberRepository
     {
-        public string AddMember(RegistrationDTO registrationDto);
+        public bool AddMember(RegistrationDTO registrationDto);
         public string Login(LoginDTO loginDto);
         public string AddExpense(ExpenseDTO expense);
         public TokenData GetUserDetailsByToken(string token);

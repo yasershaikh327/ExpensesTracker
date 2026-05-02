@@ -237,7 +237,11 @@ namespace ExpensesTracker.Controllers
 
                 };
                 _emailService.AddEmailLogs(log_Email);
-                return Json(new { success = true, message = data });
+                if (data)
+                {
+                    return Json(new { success = true, message = "Member added successfully. Redirecting to Login Page" });
+                }
+                return Json(new { success = false, message = "Email already exists. Please use a different email." });
             }
             return Json(new { success = false, message = "Please fill out all required fields correctly." });
         }
