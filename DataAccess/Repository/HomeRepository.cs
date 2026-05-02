@@ -29,7 +29,7 @@ namespace DataAccess.Repository
         {
             var countViews = new CountViews()
             {
-                dateTime = DateTime.Now
+                dateTime = DateTime.UtcNow
             };
             _postgreContext.countViews.Add(countViews);
             _postgreContext.SaveChanges();
