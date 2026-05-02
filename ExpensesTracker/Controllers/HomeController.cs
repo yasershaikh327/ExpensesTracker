@@ -53,7 +53,7 @@ namespace ExpensesTracker.Controllers
                 var body = $@"
                 <h2>Hello {contact.Name},</h2>
 
-                <p>Thank you for reaching out through my portfolio website.</p>
+                <p>Thank you for reaching out through my Expenses Tracker website.</p>
 
                 <p>I have received your message and will get back to you as soon as possible.</p>
 
@@ -82,7 +82,7 @@ namespace ExpensesTracker.Controllers
                 </p>
 
                 <hr/>
-                <p>This message was sent from your portfolio website contact form.</p>
+                <p>This message was sent from your Expenses Tracker website contact form.</p>
                 ";
 
                 _emailService.SendEmailAsync(contact.Email, contact.Name, subject, body);
@@ -203,6 +203,40 @@ namespace ExpensesTracker.Controllers
             if (ModelState.IsValid)
             {
                 var data = _memberRepository.AddMember(registration);
+                var subject = "Thanks for contacting Yaser Shaikh — I received your message\r\n";
+                var subject_admin = "New Portfolio Contact from {{Name}}\r\n";
+                var body = $@"
+                <h2>Hello {registration.Name},</h2>
+
+                <p>Thank you for choosing Expenses Tracker website.</p>
+
+                <p>The Registration is Done Successfully.</p>
+
+              
+                <br/>
+
+                <p>If your query is urgent, feel free to reply directly to this email.</p>
+
+                <p>Best Regards,<br/>
+                <b>Yaser Shaikh</b><br/>
+                Software Engineer</p>
+                ";
+                
+
+                _emailService.SendEmailAsync(registration.Email, registration.Name, subject, body);
+                var senderEmail = Environment.GetEnvironmentVariable("DEFAULT_SENDER_EMAIL");
+                var senderName = Environment.GetEnvironmentVariable("DEFAULT_SENDER_NAME");
+                var log_Email = new log_email
+                {
+                    SenderEmail = senderEmail,
+                    senderName = senderName,
+                    recipientEmail = registration.Email,
+                    recipientName = registration.Name,
+                    Subject = subject,
+                    htmlContent = body
+
+                };
+                _emailService.AddEmailLogs(log_Email);
                 return Json(new { success = true, message = data });
             }
             return Json(new { success = false, message = "Please fill out all required fields correctly." });
