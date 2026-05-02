@@ -109,7 +109,7 @@
 
 <!-- ── Nav ── -->
 <nav class="topnav">
-  <a href="Index" class="nav-logo">
+  <a asp-action="Index" asp-controller="Home" class="nav-logo">
     <div class="nav-logo-mark">₹</div>
     <div class="nav-logo-text">FinTrack</div>
   </a>
@@ -145,8 +145,8 @@
       FinTrack gives you a real-time view of every rupee — what you spend, what you earn, and what you save. No spreadsheets, no guesswork.
     </p>
     <div class="hero-cta">
-      <a href="Registration" class="btn btn-primary btn-lg">Start tracking free →</a>
-      <a href="About"    class="btn btn-ghost btn-lg">Learn more</a>
+      <a asp-action="Registration" asp-controller="Home" class="btn btn-primary btn-lg">Start tracking free →</a>
+      <a asp-action="About" asp-controller="Home"    class="btn btn-ghost btn-lg">Learn more</a>
     </div>
     <div class="hero-stats">
       <div>
@@ -247,10 +247,10 @@
 <footer class="site-footer">
   <div class="footer-copy">© 2026 FinTrack · dark pro v2.1</div>
   <div class="footer-links">
-    <a href="Index">Home</a>
-    <a href="About">About</a>
-    <a href="Contact">Contact</a>
-    <a href="Login">Login</a>
+    <a asp-action="Index" asp-controller="Home">Home</a>
+    <a asp-action="About" asp-controller="Home">About</a>
+    <a asp-action="Contact" asp-controller="Home">Contact</a>
+    <a asp-action="Login" asp-controller="Home">Login</a>
   </div>
 </footer>
 

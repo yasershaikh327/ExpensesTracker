@@ -56,7 +56,7 @@
 <div class="bg-glow"></div>
 
 <nav class="topnav" style="position:relative;z-index:10;">
-  <a href="Index" class="nav-logo">
+  <a asp-action="Index" asp-controller="Home" class="nav-logo">
     <div class="nav-logo-mark">₹</div>
     <div class="nav-logo-text">FinTrack</div>
   </a>
@@ -126,19 +126,19 @@
 
       <div class="or-row">or</div>
 
-      <a href="Registration" class="btn btn-ghost btn-full" style="justify-content:center;display:flex;">
+      <a asp-action="Registration" asp-controller="Home" class="btn btn-ghost btn-full" style="justify-content:center;display:flex;">
         Register now — it's free
       </a>
 
       <div class="auth-footer">
         Don't have an account?
-        <a href="Registration">Create one →</a>
+        <a asp-action="Registration" asp-controller="Home">Create one →</a>
       </div>
     </div>
 
     <!-- Back to home -->
     <div style="text-align:center;margin-top:20px;">
-      <a href="Index" style="font-size:12px;color:var(--text-muted);text-decoration:none;font-family:var(--font-mono);">← Back to home</a>
+      <a asp-action="Index" asp-controller="Home" style="font-size:12px;color:var(--text-muted);text-decoration:none;font-family:var(--font-mono);">← Back to home</a>
     </div>
   </div>
 </div>
