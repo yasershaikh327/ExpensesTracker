@@ -13,6 +13,7 @@ namespace DataAccess.DtoModels.Response
         public int Credits { get; set; } = 0;
         public char Status { get; set; } = 'N';
         public List<TransactionResponseDto> Transaction { get; set; } = new List<TransactionResponseDto>();
+        public List<BudgetsResponseDto> Budget { get; set; } = new List<BudgetsResponseDto>();
     }
 
     public class TransactionResponseDto
@@ -21,7 +22,15 @@ namespace DataAccess.DtoModels.Response
         public decimal Amount { get; set; } = decimal.Zero;
         public char Type { get; set; } = 'D';
         public string? Category { get; set; } = string.Empty;
+        public string? OtherCategory { get; set; } = string.Empty;
         public string? Description { get; set; } = string.Empty;
         public string? Type2 { get; set; } = string.Empty;
+    }
+
+    public class BudgetsResponseDto
+    {
+        public string? Category { get; set; } = string.Empty;
+        public decimal Amount { get; set; } = decimal.Zero;
+        public string? OtherCategory { get; set; } = string.Empty;
     }
 }

@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="~/css/site.css" />
   <script src="~/js/site.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     .budget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .budget-card {
@@ -56,7 +57,7 @@
       </div>
       <div class="stat-card c-teal">
         <div class="stat-label">Remaining</div>
-        <div class="stat-value teal" id="totalRemaining">₹0</div>
+        <div class="stat-value" id="totalRemaining">₹0</div>
         <div class="stat-change" id="remainingDays"></div>
       </div>
     </div>
@@ -72,7 +73,7 @@
   <div id="modal-mount"></div>
 </div>
 
-<script src="shared.js"></script>
+
 <script>
   document.getElementById('sidebar-mount').innerHTML    = renderSidebar('budget');
   document.getElementById('mobile-nav-mount').innerHTML = renderMobileNav('budget');
@@ -106,6 +107,12 @@
             const remaining = response.data.totalIncome - response.data.totalSpent;
             document.getElementById('totalSpent').textContent   = fmt_inr(response.data.totalSpent);
             document.getElementById('totalBudget').textContent  = fmt_inr(response.data.totalIncome);
+            const totalRemaining = document.getElementById('totalRemaining');
+            if (response.data.netSaving >= 0) {
+                totalRemaining.style.color = "green";
+            } else {
+                totalRemaining.style.color = "red";
+            }
             document.getElementById('totalRemaining').textContent = fmt_inr(response.data.netSaving);
         },
         error: function(error) {
@@ -115,32 +122,56 @@
     });
   }
 
-  function renderBudget(){
-    const catSpend=getCatSpend(); updateOverview(catSpend);
-    document.getElementById('budgetGrid').innerHTML=Object.entries(budgets).map(([cat,limit])=>{
-      const spent=catSpend[cat]||0, pct=Math.min(Math.round(spent/limit*100),100);
-      const m=CAT_META[cat]||CAT_META.Other;
-      const color=pct>80?'#f07060':pct>60?'#f5b942':'#34d9a5';
-      const badgeBg=pct>80?'rgba(240,112,96,0.15)':pct>60?'rgba(245,185,66,0.15)':'rgba(52,217,165,0.12)';
-      const remaining=Math.max(limit-spent,0);
-      return `<div class="budget-card">
-        <div class="budget-card-top">
-          <div class="budget-cat-name">
-            <div class="budget-cat-icon" style="background:${m.color}22;">${m.icon}</div>${cat}
+  function renderBudget() {
+  const grid = document.getElementById('budgetGrid');
+  if (!grid) return;
+
+  $.ajax({
+    url: "/Member/GetDashboardData",
+    method: "GET",
+    success: function (response) {
+      const budgets = response?.data?.budget ?? [];
+
+      if (!budgets.length) {
+        grid.innerHTML = `<div class="empty-state">no budget data</div>`;
+        return;
+      }
+
+      updateOverview(
+        budgets.reduce((acc, e) => {
+          acc[e.category] = Number(e.amount || 0);
+          return acc;
+        }, {})
+      );
+
+      grid.innerHTML = budgets.map(e => {
+        const category = (e.category != "Other") ? e.category : e.otherCategory;
+        const amount = Number(e.amount ?? 0);
+        const meta = CAT_META[category] || CAT_META.Other;
+
+        return `
+          <div class="budget-card">
+            <div class="budget-card-top">
+              <div class="budget-cat-name">
+                <div class="budget-cat-icon" style="background:${meta.color}22;">${meta.icon}</div>
+                ${category}
+              </div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+              <div style="font-family:var(--font-mono);font-size:20px;font-weight:500;color:${meta.color};">
+                ${fmt_inr(amount)}
+              </div>
+            </div>
           </div>
-          <span class="budget-pct-badge" style="background:${badgeBg};color:${color};">${pct}%</span>
-        </div>
-        <div style="margin-bottom:10px;">
-          <div style="font-family:var(--font-mono);font-size:20px;font-weight:500;color:${color};">${fmt_inr(spent)}</div>
-          <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-secondary);">of <span style="cursor:pointer;border-bottom:1px dashed var(--border-hi);" onclick="editLimit('${cat}')">${fmt_inr(limit)}</span> limit</div>
-        </div>
-        <div class="bbar-bg"><div class="bbar-fill" style="width:${pct}%;background:${color};"></div></div>
-        <div class="budget-remaining">
-          ${remaining>0?`<span class="up">₹${remaining.toLocaleString('en-IN')} remaining</span>`:`<span class="down">Over by ₹${(spent-limit).toLocaleString('en-IN')}</span>`}
-        </div>
-      </div>`;
-    }).join('');
-  }
+        `;
+      }).join('');
+    },
+    error: function () {
+      grid.innerHTML = `<div class="empty-state">failed to load budget</div>`;
+    }
+  });
+}
 
   function editLimit(cat){
     const val=prompt(`Budget for ${cat} (current: ₹${budgets[cat].toLocaleString('en-IN')}):`,budgets[cat]);
@@ -150,15 +181,55 @@
     budgets[cat]=num; saveBudgets(); renderBudget();
   }
 
-  function saveEntry(){
+function saveEntry() {
+    const btn = document.querySelector('.type-btn.active-neg, .type-btn.active-pos');
+    const type = btn?.id === 'btnExpense' ? 'expense' : 'income';
     const desc=document.getElementById('fDesc').value.trim();
     const amt=parseFloat(document.getElementById('fAmt').value);
-    const cat=document.getElementById('fCat').value, date=document.getElementById('fDate').value;
+    const cat=document.getElementById('fCat').value;
+    const date=document.getElementById('fDate').value;
+    const othercat=document.getElementById('othercatinput').value;
+    if(cat === 'Other' && othercat === ''){
+        alert('Please fill Other Category Input Field.');return;
+    }
     if (!desc||!amt||amt<=0||!date){alert('Please fill all fields.');return;}
-    entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
-    saveEntries(entries);
-    document.getElementById('fDesc').value=''; document.getElementById('fAmt').value='';
-    closeModal(); renderBudget();
+    // entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
+    // saveEntries(entries);
+    // document.getElementById('fDesc').value='';
+    // document.getElementById('fAmt').value='';
+    const expense = { ExpenseType :type, Description: desc, Amount: amt, Category: cat, DateofExpense: date,OtherCatInput: othercat };
+      $.ajax({
+          url: "/Member/Expense",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(expense),
+          success: function(response) {
+              if(response.success) {
+                  Swal.fire({
+                  text: response.message,
+                  icon: "success",
+                  theme: 'dark'
+                });
+               setTimeout(function () {
+                    location.reload();
+                }, 1500);
+              }else{
+                 Swal.fire({
+                  text: "✗ Failed to save the entry.",
+                  icon: "error",
+                  theme: 'dark'
+                });
+                 return false;
+              }
+            
+          },
+          error: function(error) {
+             alert('✗ An error occurred during contacting.');
+             return false;
+          }
+      });
+
+    closeModal(); renderAll();
   }
 
   window.addEventListener('load', renderBudget);

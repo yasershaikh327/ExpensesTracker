@@ -23,6 +23,7 @@ namespace DataAccess.DtoModels.Request
 
         [Required]
         public string? Category { get; set; }
+        public string? OtherCatInput { get; set; } = string.Empty;
 
         [Required]
         public DateOnly? DateofExpense { get; set; }

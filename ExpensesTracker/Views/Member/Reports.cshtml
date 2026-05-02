@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTrack — Reports</title>
   <link rel="stylesheet" href="~/css/site.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="~/js/site.js"></script>
   <style>
     .report-grid { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px; }
@@ -89,7 +91,7 @@
   <div id="modal-mount"></div>
 </div>
 
-<script src="shared.js"></script>
+
 <script>
   document.getElementById('sidebar-mount').innerHTML    = renderSidebar('reports');
   document.getElementById('mobile-nav-mount').innerHTML = renderMobileNav('reports');
@@ -102,141 +104,409 @@
   let entries = loadEntries();
   const getExpenses=()=>entries.filter(e=>e.type==='expense');
 
-  function updateStats(){
-    const exp=getExpenses(), days=now.getDate();
-    const totalSpent=exp.reduce((s,e)=>s+e.amt,0);
-    document.getElementById('avgDaily').textContent=fmt_inr(Math.round(totalSpent/days));
-    document.getElementById('txCount').textContent=exp.length;
-    if (exp.length){
-      const top=exp.reduce((m,e)=>e.amt>m.amt?e:m,exp[0]);
-      document.getElementById('biggestExp').textContent=fmt_inr(top.amt);
-      document.getElementById('biggestExpDesc').textContent=top.desc;
+function updateStats() {
+  $.ajax({
+    url: "/Member/GetDashboardData",
+    method: "GET",
+    success: function (response) {
+      const tx = response?.data?.transaction ?? [];
+      const days = new Date().getDate();
+
+      const expenses = tx.filter(e => (e.type ?? '').toUpperCase() === 'D');
+
+      const totalSpent = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+
+      document.getElementById('avgDaily').textContent =
+        fmt_inr(days > 0 ? Math.round(totalSpent / days) : 0);
+
+      document.getElementById('txCount').textContent = expenses.length;
+
+      if (expenses.length) {
+        const top = expenses.reduce((m, e) =>
+          Number(e.amount || 0) > Number(m.amount || 0) ? e : m
+        , expenses[0]);
+
+        document.getElementById('biggestExp').textContent =
+          fmt_inr(Number(top.amount || 0));
+
+        document.getElementById('biggestExpDesc').textContent =
+          top.description ?? 'null';
+      } else {
+        document.getElementById('biggestExp').textContent = '₹0';
+        document.getElementById('biggestExpDesc').textContent = 'null';
+      }
+    },
+    error: function () {
+      document.getElementById('avgDaily').textContent = '₹0';
+      document.getElementById('txCount').textContent = '0';
+      document.getElementById('biggestExp').textContent = '₹0';
+      document.getElementById('biggestExpDesc').textContent = 'null';
     }
-  }
+  });
+}
 
-  function drawBarChart(){
-    const canvas=document.getElementById('barChart');
-    if (!canvas) return;
-    const dpr=window.devicePixelRatio||1, W=canvas.offsetWidth, H=canvas.offsetHeight;
-    canvas.width=W*dpr; canvas.height=H*dpr;
-    const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
-    const cats={};
-    getExpenses().forEach(e=>{cats[e.cat]=(cats[e.cat]||0)+e.amt;});
-    const data=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
-    if (!data.length) return;
-    const maxV=Math.max(...data.map(d=>d[1]),1);
-    const pad={t:20,r:10,b:44,l:55};
-    const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
-    const gap=cW/data.length, bW=gap*0.55;
-    ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='#2a2a27'; ctx.lineWidth=0.5;
-    [0,.25,.5,.75,1].forEach(f=>{
-      const y=pad.t+cH*(1-f);
-      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
-      ctx.fillStyle='#444440'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='right';
-      ctx.fillText('₹'+(maxV*f/1000).toFixed(0)+'k',pad.l-6,y+4);
-    });
-    data.forEach(([cat,val],i)=>{
-      const x=pad.l+i*gap+(gap-bW)/2, bH=(val/maxV)*cH, y=pad.t+cH-bH;
-      const color=(CAT_META[cat]||CAT_META.Other).color;
-      ctx.fillStyle=color+'bb'; ctx.beginPath(); ctx.roundRect(x,y,bW,bH,4); ctx.fill();
-      ctx.fillStyle='#888880'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
-      ctx.fillText((CAT_META[cat]||CAT_META.Other).icon,x+bW/2,H-18);
-      ctx.fillText(cat,x+bW/2,H-6);
-      ctx.fillStyle=color; ctx.font='bold 9px JetBrains Mono,monospace';
-      ctx.fillText('₹'+(val/1000).toFixed(1)+'k',x+bW/2,y-6);
-    });
-  }
+  function drawBarChart() {
+  const canvas = document.getElementById('barChart');
+  if (!canvas) return;
 
-  function drawAreaChart(){
-    const canvas=document.getElementById('areaChart');
-    if (!canvas) return;
-    const dpr=window.devicePixelRatio||1, W=canvas.offsetWidth, H=canvas.offsetHeight;
-    canvas.width=W*dpr; canvas.height=H*dpr;
-    const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
-    const days=[];
-    for (let i=13;i>=0;i--){
-      const d=new Date(); d.setDate(d.getDate()-i);
-      const key=fmt(d), sum=getExpenses().filter(e=>e.date===key).reduce((s,e)=>s+e.amt,0);
-      days.push({label:d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}),val:sum});
+  $.ajax({
+    url: "/Member/GetDashboardData",
+    method: "GET",
+    success: function (response) {
+      const tx = response?.data?.transaction ?? [];
+
+      const dpr = window.devicePixelRatio || 1;
+      const W = canvas.offsetWidth, H = canvas.offsetHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const cats = {};
+      tx.forEach(e => {
+        if ((e.type ?? '').toUpperCase() !== 'D') return;
+
+        const cat = e.category ?? null;
+        const amt = Number(e.amount || 0);
+
+        if (!cat) return;
+        cats[cat] = (cats[cat] || 0) + amt;
+      });
+
+      const data = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+      if (!data.length) return;
+
+      const maxV = Math.max(...data.map(d => d[1]), 1);
+      const pad = { t: 20, r: 10, b: 44, l: 55 };
+      const cW = W - pad.l - pad.r;
+      const cH = H - pad.t - pad.b;
+      const gap = cW / data.length;
+      const bW = gap * 0.55;
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = '#2a2a27';
+      ctx.lineWidth = 0.5;
+
+      [0, .25, .5, .75, 1].forEach(f => {
+        const y = pad.t + cH * (1 - f);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(W - pad.r, y);
+        ctx.stroke();
+
+        ctx.fillStyle = '#444440';
+        ctx.font = '9px JetBrains Mono,monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('₹' + (maxV * f / 1000).toFixed(0) + 'k', pad.l - 6, y + 4);
+      });
+
+      data.forEach(([cat, val], i) => {
+        const x = pad.l + i * gap + (gap - bW) / 2;
+        const bH = (val / maxV) * cH;
+        const y = pad.t + cH - bH;
+
+        const meta = CAT_META[cat] || CAT_META.Other;
+
+        ctx.fillStyle = meta.color + 'bb';
+        ctx.beginPath();
+        ctx.roundRect(x, y, bW, bH, 4);
+        ctx.fill();
+
+        ctx.fillStyle = '#888880';
+        ctx.font = '9px JetBrains Mono,monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(meta.icon, x + bW / 2, H - 18);
+        ctx.fillText(cat, x + bW / 2, H - 6);
+
+        ctx.fillStyle = meta.color;
+        ctx.font = 'bold 9px JetBrains Mono,monospace';
+        ctx.fillText('₹' + (val / 1000).toFixed(1) + 'k', x + bW / 2, y - 6);
+      });
     }
-    const maxV=Math.max(...days.map(d=>d.val),500);
-    const pad={t:10,r:10,b:36,l:50};
-    const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
-    ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='#2a2a27'; ctx.lineWidth=0.5;
-    [0,.5,1].forEach(f=>{
-      const y=pad.t+cH*(1-f);
-      ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
-      ctx.fillStyle='#444440'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='right';
-      ctx.fillText('₹'+(maxV*f/1000).toFixed(0)+'k',pad.l-6,y+4);
-    });
-    ctx.fillStyle='#444440'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
-    days.forEach((d,i)=>{if(i%2===0)ctx.fillText(d.label,pad.l+i/(days.length-1)*cW,H-4);});
-    const pts=days.map((d,i)=>({x:pad.l+i/(days.length-1)*cW,y:pad.t+cH*(1-d.val/maxV)}));
-    const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+cH);
-    grad.addColorStop(0,'rgba(52,217,165,0.25)'); grad.addColorStop(1,'rgba(52,217,165,0)');
-    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-    pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
-    ctx.lineTo(pts[pts.length-1].x,pad.t+cH); ctx.lineTo(pts[0].x,pad.t+cH);
-    ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
-    ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-    pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
-    ctx.strokeStyle='#34d9a5'; ctx.lineWidth=2; ctx.lineJoin='round'; ctx.stroke();
-    pts.forEach(p=>{
-      ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2);
-      ctx.fillStyle='#34d9a5'; ctx.fill();
-      ctx.strokeStyle='#0d0d0b'; ctx.lineWidth=1.5; ctx.stroke();
-    });
-  }
+  });
+}
 
-  function renderTopTable(){
-    const top5=[...getExpenses()].sort((a,b)=>b.amt-a.amt).slice(0,5);
-    const rankColors=['#f5b942','#888880','#f07060','#8b7cf8','#34d9a5'];
-    document.getElementById('topTable').innerHTML=`
-      <thead><tr><th>#</th><th>Description</th><th>Category</th><th style="text-align:right">Amount</th></tr></thead>
-      <tbody>${top5.map((e,i)=>{
-        const m=CAT_META[e.cat]||CAT_META.Other;
-        return `<tr>
-          <td><span class="rank-badge" style="background:${rankColors[i]}22;color:${rankColors[i]};">${i+1}</span></td>
-          <td>${e.desc}</td>
-          <td><span style="font-size:10px;font-family:var(--font-mono);color:${m.color};">${m.icon} ${e.cat}</span></td>
-          <td style="text-align:right;font-family:var(--font-mono);color:var(--coral);">${fmt_inr(e.amt)}</td>
-        </tr>`;
-      }).join('')}</tbody>`;
-  }
+function drawAreaChart() {
+  const canvas = document.getElementById('areaChart');
+  if (!canvas) return;
 
-  function renderCatBreakdown(){
-    const cats={};
-    getExpenses().forEach(e=>{cats[e.cat]=(cats[e.cat]||0)+e.amt;});
-    const total=Object.values(cats).reduce((s,v)=>s+v,0);
-    if (!total) return;
-    document.getElementById('catBreakdown').innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([cat,val])=>{
-      const pct=Math.round(val/total*100), color=(CAT_META[cat]||CAT_META.Other).color;
-      const m=CAT_META[cat]||CAT_META.Other;
-      return `<div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <div style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;">${m.icon} ${cat}</div>
-          <div style="display:flex;gap:16px;align-items:center;">
-            <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">${fmt_inr(val)}</span>
-            <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:${color};">${pct}%</span>
-          </div>
-        </div>
-        <div style="height:5px;background:var(--bg-raised);border-radius:3px;">
-          <div style="height:5px;width:${pct}%;background:${color};border-radius:3px;transition:width 0.5s;"></div>
-        </div>
-      </div>`;
-    }).join('');
-  }
+  $.ajax({
+    url: "/Member/GetDashboardData",
+    method: "GET",
+    success: function (response) {
+      const tx = response?.data?.transaction ?? [];
 
-  function saveEntry(){
+      const dpr = window.devicePixelRatio || 1;
+      const W = canvas.offsetWidth, H = canvas.offsetHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const days = [];
+
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+
+        const key = fmt(d);
+
+        const sum = tx
+          .filter(e => (e.type ?? '').toUpperCase() === 'D' && e.date === key)
+          .reduce((s, e) => s + Number(e.amount || 0), 0);
+
+        days.push({
+          label: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+          val: sum
+        });
+      }
+
+      const maxV = Math.max(...days.map(d => d.val), 500);
+      const pad = { t: 10, r: 10, b: 36, l: 50 };
+      const cW = W - pad.l - pad.r;
+      const cH = H - pad.t - pad.b;
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = '#2a2a27';
+      ctx.lineWidth = 0.5;
+
+      [0, .5, 1].forEach(f => {
+        const y = pad.t + cH * (1 - f);
+        ctx.beginPath();
+        ctx.moveTo(pad.l, y);
+        ctx.lineTo(W - pad.r, y);
+        ctx.stroke();
+
+        ctx.fillStyle = '#444440';
+        ctx.font = '9px JetBrains Mono,monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('₹' + (maxV * f / 1000).toFixed(0) + 'k', pad.l - 6, y + 4);
+      });
+
+      ctx.fillStyle = '#444440';
+      ctx.font = '9px JetBrains Mono,monospace';
+      ctx.textAlign = 'center';
+
+      days.forEach((d, i) => {
+        if (i % 2 === 0) {
+          ctx.fillText(d.label, pad.l + i / (days.length - 1) * cW, H - 4);
+        }
+      });
+
+      const pts = days.map((d, i) => ({
+        x: pad.l + i / (days.length - 1) * cW,
+        y: pad.t + cH * (1 - d.val / maxV)
+      }));
+
+      const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + cH);
+      grad.addColorStop(0, 'rgba(52,217,165,0.25)');
+      grad.addColorStop(1, 'rgba(52,217,165,0)');
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(pts[pts.length - 1].x, pad.t + cH);
+      ctx.lineTo(pts[0].x, pad.t + cH);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.strokeStyle = '#00ff68';
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      pts.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#00ff68';
+        ctx.fill();
+        ctx.strokeStyle = '#0d0d0b';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+    }
+  });
+}
+
+  function renderTopTable() {
+  $.ajax({
+    url: "/Member/GetDashboardData",
+    method: "GET",
+    success: function (response) {
+      const tx = response?.data?.transaction ?? [];
+      const top5 = tx
+        .filter(e => (e.type ?? '').toUpperCase() === 'D')
+        .sort((a, b) => Number(b.amount || 0) - Number(a.amount || 0))
+        .slice(0, 5);
+
+      const rankColors = ['#f5b942', '#888880', 'red', '#8b7cf8', '#00ff68'];
+
+      document.getElementById('topTable').innerHTML = `
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th style="text-align:right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${top5.map((e, i) => {
+            const meta = CAT_META[e.category] || CAT_META.Other;
+            const category = (e.category != "Other") ? e.category : e.otherCategory;
+            return `
+              <tr>
+                <td>
+                  <span class="rank-badge" style="background:${rankColors[i]}22;color:${rankColors[i]};">
+                    ${i + 1}
+                  </span>
+                </td>
+                <td>${e.description ?? 'null'}</td>
+                <td>
+                  <span style="font-size:10px;font-family:var(--font-mono);color:${meta.color};">
+                    ${meta.icon} ${category ?? 'null'}
+                  </span>
+                </td>
+                <td style="text-align:right;font-family:var(--font-mono);color:var(--coral);">
+                  ${fmt_inr(Number(e.amount || 0))}
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      `;
+    },
+    error: function () {
+      document.getElementById('topTable').innerHTML = `
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th style="text-align:right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" style="text-align:center;">failed to load</td></tr>
+        </tbody>
+      `;
+    }
+  });
+}
+
+function renderCatBreakdown() {
+  $.ajax({
+    url: "/Member/GetDashboardData",
+    method: "GET",
+    success: function (response) {
+      const tx = response?.data?.transaction ?? [];
+      const cats = {};
+
+      tx.forEach(e => {
+        if ((e.type ?? '').toUpperCase() !== 'D') return;
+
+        const cat = e.category ?? null;
+        const amt = Number(e.amount || 0);
+
+        if (!cat) return;
+        cats[cat] = (cats[cat] || 0) + amt;
+      });
+
+      const total = Object.values(cats).reduce((s, v) => s + v, 0);
+
+      if (!total) {
+        document.getElementById('catBreakdown').innerHTML = '';
+        return;
+      }
+
+      document.getElementById('catBreakdown').innerHTML = Object.entries(cats)
+        .sort((a, b) => b[1] - a[1])
+        .map(([cat, val]) => {
+          const pct = Math.round((val / total) * 100);
+          const meta = CAT_META[cat] || CAT_META.Other;
+
+          return `
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <div style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;">
+                  ${meta.icon} ${cat}
+                </div>
+                <div style="display:flex;gap:16px;align-items:center;">
+                  <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-secondary);">
+                    ${fmt_inr(val)}
+                  </span>
+                  <span style="font-family:var(--font-mono);font-size:12px;font-weight:500;color:${meta.color};">
+                    ${pct}%
+                  </span>
+                </div>
+              </div>
+              <div style="height:5px;background:var(--bg-raised);border-radius:3px;">
+                <div style="height:5px;width:${pct}%;background:${meta.color};border-radius:3px;transition:width 0.5s;"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+    },
+    error: function () {
+      document.getElementById('catBreakdown').innerHTML = '';
+    }
+  });
+}
+
+function saveEntry() {
+    const btn = document.querySelector('.type-btn.active-neg, .type-btn.active-pos');
+    const type = btn?.id === 'btnExpense' ? 'expense' : 'income';
     const desc=document.getElementById('fDesc').value.trim();
     const amt=parseFloat(document.getElementById('fAmt').value);
-    const cat=document.getElementById('fCat').value, date=document.getElementById('fDate').value;
+    const cat=document.getElementById('fCat').value;
+    const date=document.getElementById('fDate').value;
+    const othercat=document.getElementById('othercatinput').value;
+    if(cat === 'Other' && othercat === ''){
+        alert('Please fill Other Category Input Field.');return;
+    }
     if (!desc||!amt||amt<=0||!date){alert('Please fill all fields.');return;}
-    entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
-    saveEntries(entries);
-    document.getElementById('fDesc').value=''; document.getElementById('fAmt').value='';
+    // entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
+    // saveEntries(entries);
+    // document.getElementById('fDesc').value='';
+    // document.getElementById('fAmt').value='';
+    const expense = { ExpenseType :type, Description: desc, Amount: amt, Category: cat, DateofExpense: date,OtherCatInput: othercat };
+      $.ajax({
+          url: "/Member/Expense",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(expense),
+          success: function(response) {
+              if(response.success) {
+                  Swal.fire({
+                  text: response.message,
+                  icon: "success",
+                  theme: 'dark'
+                });
+               setTimeout(function () {
+                    location.reload();
+                }, 1500);
+              }else{
+                 Swal.fire({
+                  text: "✗ Failed to save the entry.",
+                  icon: "error",
+                  theme: 'dark'
+                });
+                 return false;
+              }
+            
+          },
+          error: function(error) {
+             alert('✗ An error occurred during contacting.');
+             return false;
+          }
+      });
+
     closeModal(); renderAll();
   }
 

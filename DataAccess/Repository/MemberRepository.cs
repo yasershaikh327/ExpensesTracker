@@ -191,10 +191,18 @@ namespace DataAccess.Repository
                     Amount = e.Amount,
                     Date = e.DateofExpense,
                     Category = e.Category,
+                    OtherCategory = (e.Category == "Other") ? e.OtherCatInput : e.Category,
                     Type = e.ExpenseType == "income" ? 'C' : 'D',
                     Description = e.Description,
                     Type2 = e.ExpenseType == "income" ? "income" : "expense"
+                }).ToList(),
+                Budget = _postgreContext.expense.Where(b => b.UserId == userId).Select(b => new BudgetsResponseDto
+                {
+                    Amount = b.Amount,
+                    Category = b.Category,
+                    OtherCategory = (b.Category == "Other") ? b.OtherCatInput : b.Category
                 }).ToList()
+
             };
             return dashboardResponse;
         }

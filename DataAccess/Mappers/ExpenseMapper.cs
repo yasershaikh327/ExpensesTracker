@@ -18,6 +18,7 @@ namespace DataAccess.Mappers
                 Amount = expenseDto.Amount ?? 0.0m,
                 Category = expenseDto.Category,
                 UserId = expenseDto.UserId,
+                OtherCatInput = expenseDto.OtherCatInput ?? string.Empty,
                 DateofExpense = expenseDto.DateofExpense
     
            };

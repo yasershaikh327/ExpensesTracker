@@ -6,6 +6,7 @@
   <title>FinTrack — Transactions</title>
     <link rel="stylesheet" href="~/css/site.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       <script src="~/js/site.js"></script>
       <style>
         .search-bar {
@@ -106,7 +107,7 @@
   <div id="modal-mount"></div>
 </div>
 
-<script src="shared.js"></script>
+
 <script>
   document.getElementById('sidebar-mount').innerHTML    = renderSidebar('transactions');
   document.getElementById('mobile-nav-mount').innerHTML = renderMobileNav('transactions');
@@ -169,9 +170,12 @@
       date: e.date,
       type: e.type2,                 // income / expense
       cat: e.category,
+      cate: (e.category != 'Other') ? e.category : e.otherCategory,
       desc: e.description,
       amt: Number(e.amount || 0)
     }));
+
+
 
     // sorting
     data = data.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
@@ -213,6 +217,7 @@
           })
         : '--';
 
+
       return `
         <div class="tx-row">
           <div class="tx-icon" style="background:${m.color}22;">${m.icon}</div>
@@ -226,11 +231,11 @@
             </div>
           </div>
 
-          <div class="cat-badge-cell">
-            <span class="tx-cat-badge" style="background:${m.color}22;color:${m.color};">
-              ${e.cat ?? 'null'}
-            </span>
-          </div>
+         <div class="cat-badge-cell">
+                  <span class="tx-cat-badge" style="background:${m.color}22;color:${m.color};">
+                    ${e.cate}
+                  </span>
+                </div>
 
           <div class="tx-date-col">${dStr}</div>
 
@@ -255,7 +260,7 @@
       <div>Expenses: <span style="color:var(--coral)">${fmt_inr(totalExp)}</span></div>
       <div>Income: <span style="color:var(--teal)">${fmt_inr(totalInc)}</span></div>
       <div>Net: <span style="color:${net >= 0 ? 'var(--teal)' : 'var(--coral)'}">
-        ${fmt_inr(Math.abs(net))}
+        ${fmt_inr(net)}
       </span></div>
     `;
 
@@ -271,17 +276,55 @@
     entries=entries.filter(e=>e.id!==id);
     saveEntries(entries); renderTxList();
   }
-
-  function saveEntry(){
+function saveEntry() {
+    const btn = document.querySelector('.type-btn.active-neg, .type-btn.active-pos');
+    const type = btn?.id === 'btnExpense' ? 'expense' : 'income';
     const desc=document.getElementById('fDesc').value.trim();
     const amt=parseFloat(document.getElementById('fAmt').value);
     const cat=document.getElementById('fCat').value;
     const date=document.getElementById('fDate').value;
+    const othercat=document.getElementById('othercatinput').value;
+    if(cat === 'Other' && othercat === ''){
+        alert('Please fill Other Category Input Field.');return;
+    }
     if (!desc||!amt||amt<=0||!date){alert('Please fill all fields.');return;}
-    entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
-    saveEntries(entries);
-    document.getElementById('fDesc').value=''; document.getElementById('fAmt').value='';
-    closeModal(); renderTxList();
+    // entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
+    // saveEntries(entries);
+    // document.getElementById('fDesc').value='';
+    // document.getElementById('fAmt').value='';
+    const expense = { ExpenseType :type, Description: desc, Amount: amt, Category: cat, DateofExpense: date,OtherCatInput: othercat };
+      $.ajax({
+          url: "/Member/Expense",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(expense),
+          success: function(response) {
+              if(response.success) {
+                  Swal.fire({
+                  text: response.message,
+                  icon: "success",
+                  theme: 'dark'
+                });
+               setTimeout(function () {
+                    location.reload();
+                }, 1500);
+              }else{
+                 Swal.fire({
+                  text: "✗ Failed to save the entry.",
+                  icon: "error",
+                  theme: 'dark'
+                });
+                 return false;
+              }
+            
+          },
+          error: function(error) {
+             alert('✗ An error occurred during contacting.');
+             return false;
+          }
+      });
+
+    closeModal(); renderAll();
   }
 
   window.addEventListener('load',()=>{buildCatChips();renderTxList();});

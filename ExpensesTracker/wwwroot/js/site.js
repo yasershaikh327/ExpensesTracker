@@ -186,17 +186,24 @@ function renderModal() {
       </div>
       <div class="form-row">
         <label>Category</label>
-        <select id="fCat">
-          <option value="Food">🍕 Food</option>
-          <option value="Transport">⛽ Transport</option>
-          <option value="Shopping">🛍 Shopping</option>
-          <option value="Entertainment">🎬 Entertainment</option>
-          <option value="Health">💊 Health</option>
-          <option value="Utilities">💡 Utilities</option>
-          <option value="Income">💰 Income</option>
-          <option value="Other">📦 Other</option>
-        </select>
-      </div>
+        <div class="form-row">
+          <select id="fCat">
+            <option value="Food">🍕 Food</option>
+            <option value="Transport">⛽ Transport</option>
+            <option value="Shopping">🛍 Shopping</option>
+            <option value="Entertainment">🎬 Entertainment</option>
+            <option value="Health">💊 Health</option>
+            <option value="Utilities">💡 Utilities</option>
+            <option value="Income">💰 Income</option>
+            <option value="Electronics">🔆 Electronics</option>
+            <option value="Other">📦 Other</option>
+          </select>
+        </div>
+
+        <div class="form-row" id="othercatinputdiv" style="display:none;">
+          <label>Other Category</label>
+          <input type="text" id="othercatinput" />
+        </div>
       <div class="form-row">
         <label>Date</label>
         <input type="date" id="fDate" />
@@ -209,6 +216,20 @@ function renderModal() {
   </div>`;
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("fCat").addEventListener("change", function () {
+        const otherCatDiv = document.getElementById("othercatinputdiv");
+        const otherCatInput = document.getElementById("othercatinput");
+
+        if (this.value === "Other") {
+            otherCatDiv.style.display = "block";
+            otherCatInput.focus();
+        } else {
+            otherCatDiv.style.display = "none";
+            otherCatInput.value = "";
+        }
+    });
+});
 
 /* ── Shared modal state & logic ── */
 let _entryType = 'expense';

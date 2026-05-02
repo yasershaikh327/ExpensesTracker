@@ -109,7 +109,7 @@
   <div id="modal-mount"></div>
 </div>
 
-<script src="shared.js"></script>
+
 <script>
   document.getElementById('sidebar-mount').innerHTML    = renderSidebar('dashboard');
   document.getElementById('mobile-nav-mount').innerHTML = renderMobileNav('dashboard');
@@ -190,10 +190,17 @@
             const amount = e.amount ?? null;
             const description = e.description ?? null;
             const type = (e.type2 ?? null)?.toLowerCase();
+            var othercatinput = "";
 
             const meta = CAT_META[category] || CAT_META.Other;
             const sign = type === 'income' ? '+' : '-';
             const cls = type === 'income' ? 'pos' : 'neg';
+
+            if(category == "Other"){
+                othercatinput = e.otherCategory;
+            }else{
+                othercatinput = e.category;
+            }
 
             const dStr = e.date
                 ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', {
@@ -208,7 +215,7 @@
 
                     <div style="flex:1;min-width:0;">
                         <div class="tx-name">${description ?? 'null'}</div>
-                        <div class="tx-cat">${category ?? 'null'}</div>
+                        <div class="tx-cat">${othercatinput ?? 'null'}</div>
                     </div>
 
                     <div class="tx-date">${dStr}</div>
@@ -353,12 +360,16 @@
 
       const tx = response.data.transaction;
       const cats = {};
+      var othercatinput = '';
 
       // Group only debit transactions by category
       tx.forEach(e => {
         if (e.type !== "D") return;
 
         const cat = e.category || "Other";
+        if(cat == "Other"){
+            othercatinput = e.category;
+        }
         const amt = Number(e.amount || 0);
 
         cats[cat] = (cats[cat] || 0) + amt;
@@ -417,11 +428,17 @@
       legend.innerHTML = sorted.slice(0, 5).map(([cat, val]) => {
         const pct = Math.round((val / total) * 100);
         const color = (CAT_META[cat] || CAT_META.Other).color;
-
+        var OtherCatName = "";
+        if(cat == 'Other'){
+            OtherCatname = othercatinput;
+        }else{
+            OtherCatname = cat;
+        }
+        console.info(OtherCatname);
         return `
           <div class="legend-row">
             <div class="legend-dot" style="background:${color}"></div>
-            <div class="legend-name">${cat}</div>
+            <div class="legend-name">${OtherCatname}</div>
             <div class="legend-pct" style="color:${color}">${pct}%</div>
           </div>
         `;
@@ -443,6 +460,11 @@
         success: function(response) {
             document.getElementById('statSpent').textContent   = fmt_inr(response.data.totalSpent);
             document.getElementById('statIncome').textContent  = fmt_inr(response.data.totalIncome);
+            if(response.data.netSaving >= 0){
+                document.getElementById('statSavings').color = "green";
+            }else{
+                document.getElementById('statSavings').color = "red";
+            }
             document.getElementById('statSavings').textContent = fmt_inr((response.data.netSaving));
             document.getElementById('statSpentChg').innerHTML  = `<span class="down">${response.data.noofTransactions} transactions</span>`;
             document.getElementById('statIncomeChg').innerHTML = `<span class="up">${response.data.credits} credits</span>`;
@@ -465,12 +487,16 @@
     const amt=parseFloat(document.getElementById('fAmt').value);
     const cat=document.getElementById('fCat').value;
     const date=document.getElementById('fDate').value;
+    const othercat=document.getElementById('othercatinput').value;
+    if(cat === 'Other' && othercat === ''){
+        alert('Please fill Other Category Input Field.');return;
+    }
     if (!desc||!amt||amt<=0||!date){alert('Please fill all fields.');return;}
     // entries.push({id:getNextId(entries),type:_entryType,desc,cat,amt,date});
     // saveEntries(entries);
     // document.getElementById('fDesc').value='';
     // document.getElementById('fAmt').value='';
-    const expense = { ExpenseType :type, Description: desc, Amount: amt, Category: cat, DateofExpense: date };
+    const expense = { ExpenseType :type, Description: desc, Amount: amt, Category: cat, DateofExpense: date,OtherCatInput: othercat };
       $.ajax({
           url: "/Member/Expense",
           method: "POST",
