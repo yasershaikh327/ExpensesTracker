@@ -87,7 +87,7 @@ namespace ExpensesTracker.Controllers
 
                 _emailService.SendEmailAsync(contact.Email, contact.Name, subject, body);
                 _emailService.SendEmailAsync("syaser327@gmail.com", "Yaser", subject_admin, adminBody);
-                var senderEmail = Environment.GetEnvironmentVariable("DEFAULT_SENDER_EMAIL");
+                var senderEmail = Environment.GetEnvironmentVariable("DEFAULT_SENDER_MAIL");
                 var senderName = Environment.GetEnvironmentVariable("DEFAULT_SENDER_NAME");
                 var log_Email = new log_email
                 {
@@ -211,7 +211,6 @@ namespace ExpensesTracker.Controllers
             {
                 var data = _memberRepository.AddMember(registration);
                 var subject = "Thanks for contacting Yaser Shaikh — I received your message\r\n";
-                var subject_admin = "New Portfolio Contact from {{Name}}\r\n";
                 var body = $@"
                 <h2>Hello {registration.Name},</h2>
 
@@ -231,7 +230,7 @@ namespace ExpensesTracker.Controllers
                 
 
                 _emailService.SendEmailAsync(registration.Email, registration.Name, subject, body);
-                var senderEmail = Environment.GetEnvironmentVariable("DEFAULT_SENDER_EMAIL");
+                var senderEmail = Environment.GetEnvironmentVariable("DEFAULT_SENDER_MAIL");
                 var senderName = Environment.GetEnvironmentVariable("DEFAULT_SENDER_NAME");
                 var log_Email = new log_email
                 {
@@ -240,7 +239,7 @@ namespace ExpensesTracker.Controllers
                     recipientEmail = registration.Email,
                     recipientName = registration.Name,
                     Subject = subject,
-                    htmlContent = body
+                    htmlContent = "Registration Successfully Done!"
 
                 };
                 _emailService.AddEmailLogs(log_Email);
