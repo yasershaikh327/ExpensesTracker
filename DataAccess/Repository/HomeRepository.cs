@@ -1,5 +1,6 @@
 ﻿using DataAccess.DtoModels.Request;
 using DataAccess.Mappers.Interface;
+using DataAccess.Models;
 using DataAccess.Repository.Interface;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,20 @@ namespace DataAccess.Repository
             _postgreContext.Add(mapper);
             _postgreContext.SaveChanges();
             return "Contact form submitted successfully.";
+        }
+
+        public int CountViews()
+        {
+            var countViews = new CountViews()
+            {
+                dateTime = DateTime.Now
+            };
+            _postgreContext.countViews.Add(countViews);
+            _postgreContext.SaveChanges();
+
+            var totalViews = _postgreContext.countViews.Count();
+            return totalViews;
+
         }
     }
 }

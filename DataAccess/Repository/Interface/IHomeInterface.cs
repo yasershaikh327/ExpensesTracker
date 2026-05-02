@@ -8,5 +8,6 @@ namespace DataAccess.Repository.Interface
     public interface IHomeRepository
     {
         public string Contact(ContactDTO contact);
+        public int CountViews();
     }
 }

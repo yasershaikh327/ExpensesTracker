@@ -4,10 +4,9 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FinTrack — Take Control of Your Money</title>
-  <link rel="stylesheet" href="public.css"/>
-  <link rel="stylesheet" href="shared.css" />
   <link rel="stylesheet" href="~/css/public.css" />
   <script src="~/js/site.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
     /* ── Hero ── */
     .hero {
@@ -154,7 +153,7 @@
         <div class="hero-stat-lbl">Full transparency</div>
       </div>
       <div>
-        <div class="hero-stat-val teal">4 views</div>
+        <div class="hero-stat-val teal" id="totalViews">4 views</div>
         <div class="hero-stat-lbl">Dashboard, TX, Budget, Reports</div>
       </div>
       <div>
@@ -258,6 +257,26 @@
 function toggleMobileMenu() {
   document.getElementById('mobileMenu').classList.toggle('open');
 }
+$.ajax({
+          url: "/Home/CountViews",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(contact),
+          success: function(response) {
+              if(response.success){
+                  document.getElementById('totalViews').textContent = response.totalViews;
+              }else{
+                  document.getElementById('errorAlert').classList.add('show');
+                  document.getElementById('errorAlert').textContent = response.message;
+              }
+             
+          },
+          error: function(error) {
+              errEl.textContent = '✗ An error occurred during contacting.';
+              errEl.classList.add('show');
+              btn.textContent = 'Send Message'; btn.disabled = false;
+          }
+      });
 </script>
 </body>
 </html>

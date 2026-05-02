@@ -13,6 +13,7 @@ public class DbPostgreContext : DbContext
     public DbSet<Contact> contact { get; set; }
     public DbSet<Expense> expense { get; set; }
     public DbSet<log_email> log_Emails { get; set; }
+    public DbSet<CountViews> countViews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

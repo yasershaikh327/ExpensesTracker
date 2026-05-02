@@ -115,6 +115,13 @@ namespace ExpensesTracker.Controllers
             return View();
         }
 
+        [HttpPost]
+        public JsonResult CountViews()
+        {
+            var totalViews = _homeRepository.CountViews();
+            return Json(new { success = true, totalViews = totalViews });
+        }
+
         public IActionResult ForgetPassword()
         {
             return View();
