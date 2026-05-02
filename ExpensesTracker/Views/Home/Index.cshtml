@@ -261,10 +261,9 @@ $.ajax({
           url: "/Home/CountViews",
           method: "POST",
           contentType: "application/json",
-          data: JSON.stringify(contact),
           success: function(response) {
               if(response.success){
-                  document.getElementById('totalViews').textContent = response.totalViews + " VUpdtdeiews";
+                  document.getElementById('totalViews').textContent = response.totalViews + " Views";
               }else{
                   document.getElementById('errorAlert').classList.add('show');
                   document.getElementById('errorAlert').textContent = response.message;
