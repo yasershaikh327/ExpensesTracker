@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinTrack — About Us</title>
+  <link rel="stylesheet" href="~/css/public.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    .about-hero { padding: 72px 0 56px; border-bottom: 1px solid var(--border); margin-bottom: 60px; }
+    .team-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 40px; }
+    .team-card { text-align: center; }
+    .team-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800;
+      margin: 0 auto 14px;
+      border: 2px solid var(--border-hi);
+    }
+    .team-name  { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+    .team-role  { font-size: 11px; font-family: var(--font-mono); color: var(--text-secondary); }
+
+    .value-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 40px; }
+    .value-card { display: flex; gap: 16px; align-items: flex-start; }
+    .value-icon {
+      width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .value-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+    .value-desc  { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+    .timeline { display: flex; flex-direction: column; gap: 0; margin-top: 36px; }
+    .tl-item { display: grid; grid-template-columns: 80px 1fr; gap: 20px; padding-bottom: 30px; position: relative; }
+    .tl-item:not(:last-child)::after {
+      content:''; position:absolute; left:39px; top:32px; bottom:0; width:1px; background:var(--border);
+    }
+    .tl-year {
+      font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+      color: var(--purple); padding-top: 6px; text-align: right;
+    }
+    .tl-dot {
+      position: absolute; left: 34px; top: 8px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--purple); border: 2px solid var(--bg-deep);
+    }
+    .tl-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .tl-desc  { font-size: 13px; color: var(--text-secondary); }
+
+   
+  </style>
+</head>
+<body>
+
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:var(--bg-card-hover);border-bottom:1px solid var(--border);">
+          <th style="text-align:left;padding:16px 20px;font-size:12px;font-family:var(--font-mono);color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em;">
+            Id
+          </th>
+          <th style="text-align:left;padding:16px 20px;font-size:12px;font-family:var(--font-mono);color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em;">
+            DateTime
+          </th>
+        </tr>
+      </thead>
+     <div class="page-md" style="padding:48px 0;">
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:var(--bg-card-hover);border-bottom:1px solid var(--border);">
+      </thead>
+      <tbody id="viewsTableBody">
+        <tr>
+          <td colspan="2" style="padding:20px;text-align:center;color:var(--text-secondary);">
+            Loading...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+$(document).ready(function () {
+  $.ajax({
+    url: "/Home/CountViewsTable",
+    method: "GET",
+    contentType: "application/json",
+    success: function (response) {
+      const tbody = document.getElementById("viewsTableBody");
+      let rows = "";
+
+      if (response.success && response.totalViews.length > 0) {
+        response.totalViews.forEach((item, index) => {
+          rows += `
+            <tr style="border-bottom:${index !== response.totalViews.length - 1 ? '1px solid var(--border)' : 'none'};">
+              <td style="padding:16px 20px;font-size:14px;font-weight:600;">
+                ${item.id}
+              </td>
+              <td style="padding:16px 20px;font-size:14px;color:var(--text-secondary);">
+                ${new Date(item.dateTime).toLocaleString()}
+              </td>
+            </tr>
+          `;
+        });
+
+        tbody.innerHTML = rows;
+      } else {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="2" style="padding:20px;text-align:center;color:var(--text-secondary);">
+              No records found
+            </td>
+          </tr>
+        `;
+      }
+    },
+    error: function () {
+      document.getElementById("viewsTableBody").innerHTML = `
+        <tr>
+          <td colspan="2" style="padding:20px;text-align:center;color:#f87171;">
+            Failed to load data
+          </td>
+        </tr>
+      `;
+    }
+  });
+});
+</script>
+</body>
+</html>

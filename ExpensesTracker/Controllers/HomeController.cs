@@ -42,6 +42,18 @@ namespace ExpensesTracker.Controllers
             return View();
         }
 
+        public IActionResult WebsiteVisitors()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public JsonResult CountViewsTable()
+        {
+            var totalViews = _homeRepository.CountViewsTable();
+            return Json(new { success = true, totalViews = totalViews });
+        }
+
         [HttpPost]
         public JsonResult Contact([FromBody]ContactDTO contact)
         {

@@ -1,4 +1,5 @@
 ﻿using DataAccess.DtoModels.Request;
+using DataAccess.DtoModels.Response;
 using DataAccess.Mappers.Interface;
 using DataAccess.Models;
 using DataAccess.Repository.Interface;
@@ -37,6 +38,21 @@ namespace DataAccess.Repository
             var totalViews = _postgreContext.countViews.Count();
             return totalViews;
 
+        }
+
+        public List<VisitorsResponse> CountViewsTable()
+        {
+            var visitorsResponse = new List<VisitorsResponse>();
+            var countViewsList = _postgreContext.countViews.OrderByDescending(v => v.dateTime).ToList();
+            foreach (var countView in countViewsList)
+            {
+                visitorsResponse.Add(new VisitorsResponse
+                {
+                    Id = countView.Id,
+                    dateTime = countView.dateTime
+                });
+            }
+            return visitorsResponse;
         }
     }
 }
