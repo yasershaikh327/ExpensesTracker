@@ -33,5 +33,20 @@ namespace DataAccess.Helper
             income,
             expense
         }
+
+        public DateTime ConvertUtcToIndiaTime(DateTime utcDateTime)
+        {
+            if (utcDateTime.Kind == DateTimeKind.Unspecified)
+                utcDateTime = DateTime.SpecifyKind(utcDateTime, DateTimeKind.Utc);
+
+            TimeZoneInfo indiaZone;
+
+            if (OperatingSystem.IsWindows())
+                indiaZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            else
+                indiaZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Kolkata");
+
+            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, indiaZone);
+        }
     }
 }

@@ -8,5 +8,6 @@ namespace DataAccess.Helper.Interface
     {
         public string HashPassword(string password);
         public bool VerifyPassword(string password, string hashedPassword);
+        public DateTime ConvertUtcToIndiaTime(DateTime utcDateTime);
     }
 }

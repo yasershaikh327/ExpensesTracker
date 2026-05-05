@@ -1,5 +1,6 @@
 ﻿using DataAccess.DtoModels.Request;
 using DataAccess.DtoModels.Response;
+using DataAccess.Helper.Interface;
 using DataAccess.Mappers.Interface;
 using DataAccess.Models;
 using DataAccess.Repository.Interface;
@@ -13,10 +14,12 @@ namespace DataAccess.Repository
     {
         private readonly DbPostgreContext _postgreContext;
         private readonly IContactMapper _contactMapper;
-        public HomeRepository(DbPostgreContext postgreContext, IContactMapper contactMapper) 
+        private readonly IHelper _helper;
+        public HomeRepository(DbPostgreContext postgreContext, IContactMapper contactMapper, IHelper helper) 
         { 
             _postgreContext = postgreContext;
             _contactMapper = contactMapper;
+            _helper = helper;
         }
         public string Contact(ContactDTO contactDto)
         {
@@ -49,7 +52,7 @@ namespace DataAccess.Repository
                 visitorsResponse.Add(new VisitorsResponse
                 {
                     Id = countView.Id,
-                    dateTime = countView.dateTime
+                    dateTime = _helper.ConvertUtcToIndiaTime(countView.dateTime)
                 });
             }
             return visitorsResponse;
